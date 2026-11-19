@@ -1,6 +1,8 @@
 import {
   CorrelationMatrixResponse,
   CorrelationMethod,
+  CreateDatasetEmbeddingSpaceRequest,
+  CreateTextEmbeddingSpaceRequest,
   DatasetDeleteResponse,
   DatasetDistributionsResponse,
   DatasetInspectionResponse,
@@ -8,7 +10,16 @@ import {
   DatasetQualityResponse,
   DatasetRowsQuery,
   DatasetRowsResponse,
+  EmbeddingModality,
+  EmbeddingModelInfo,
+  EmbeddingSpaceDeleteResponse,
+  EmbeddingSpaceListResponse,
+  EmbeddingSpaceSummary,
   HealthResponse,
+  PointInspectionResponse,
+  ProjectionRequest,
+  ProjectionResponse,
+  ReducerInfo,
   VectorSimilarityRequest,
   VectorSimilarityResponse,
 } from '../types/api';
@@ -118,4 +129,57 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  listEmbeddingModels: (modality?: EmbeddingModality) =>
+    request<EmbeddingModelInfo[]>(
+      `/embeddings/models${modality ? `?modality=${modality}` : ''}`
+    ),
+
+  listReducers: () => request<ReducerInfo[]>('/embeddings/reducers'),
+
+  listEmbeddingSpaces: () => request<EmbeddingSpaceListResponse>('/embeddings/spaces'),
+
+  createTextEmbeddingSpace: (payload: CreateTextEmbeddingSpaceRequest) =>
+    request<EmbeddingSpaceSummary>('/embeddings/spaces/text', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  createEmbeddingSpaceFromDataset: (payload: CreateDatasetEmbeddingSpaceRequest) =>
+    request<EmbeddingSpaceSummary>('/embeddings/spaces/from-dataset', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  createImageEmbeddingSpace: (name: string, modelId: string, files: File[]) => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('model_id', modelId);
+    for (const file of files) {
+      formData.append('files', file);
+    }
+    return request<EmbeddingSpaceSummary>('/embeddings/spaces/image', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  deleteEmbeddingSpace: (spaceId: string) =>
+    request<EmbeddingSpaceDeleteResponse>(`/embeddings/spaces/${encodeURIComponent(spaceId)}`, {
+      method: 'DELETE',
+    }),
+
+  projectEmbeddingSpace: (spaceId: string, payload: ProjectionRequest) =>
+    request<ProjectionResponse>(
+      `/embeddings/spaces/${encodeURIComponent(spaceId)}/project`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    ),
+
+  inspectEmbeddingPoint: (spaceId: string, pointIndex: number, topK = 5) =>
+    request<PointInspectionResponse>(
+      `/embeddings/spaces/${encodeURIComponent(spaceId)}/points/${pointIndex}?top_k=${topK}`
+    ),
 };

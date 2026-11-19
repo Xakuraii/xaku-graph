@@ -4,7 +4,7 @@ import { AppLayout, NavModuleId } from '../layouts/AppLayout';
 import { StudioOverview } from '../features/overview/StudioOverview';
 import { DatasetExplorer } from '../features/datasets/DatasetExplorer';
 import { VectorExplorer } from '../features/vectors/VectorExplorer';
-import { EmbeddingPlaceholder } from '../features/embeddings/EmbeddingPlaceholder';
+import { EmbeddingExplorer } from '../features/embeddings/EmbeddingExplorer';
 import { RagPlaceholder } from '../features/rag/RagPlaceholder';
 import { MlPlaceholder } from '../features/machine-learning/MlPlaceholder';
 import { apiClient } from '../services/apiClient';
@@ -60,7 +60,7 @@ export const App: React.FC = () => {
       case 'vectors':
         return <VectorExplorer />;
       case 'embeddings':
-        return <EmbeddingPlaceholder />;
+        return <EmbeddingExplorer isDark={isDark} />;
       case 'rag':
         return <RagPlaceholder />;
       case 'ml':

@@ -172,3 +172,135 @@ export interface VectorSimilarityResponse {
   normalized_a?: number[];
   normalized_b?: number[];
 }
+
+export type EmbeddingModality = 'text' | 'image';
+export type ReductionMethod = 'pca' | 'tsne' | 'umap';
+
+export interface EmbeddingModelInfo {
+  model_id: string;
+  name: string;
+  modality: EmbeddingModality;
+  dimensions: number;
+  description: string;
+  available: boolean;
+  is_local_lightweight: boolean;
+  install_hint?: string | null;
+}
+
+export interface ReducerInfo {
+  method: ReductionMethod;
+  name: string;
+  description: string;
+  available: boolean;
+  supports_3d: boolean;
+  install_hint?: string | null;
+}
+
+export interface EmbeddingItemInput {
+  text: string;
+  label?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CreateTextEmbeddingSpaceRequest {
+  name: string;
+  model_id: string;
+  items: EmbeddingItemInput[];
+}
+
+export interface CreateDatasetEmbeddingSpaceRequest {
+  dataset_id: string;
+  text_column: string;
+  metadata_columns: string[];
+  model_id: string;
+  name?: string;
+  max_rows?: number;
+}
+
+export interface EmbeddingSpaceSummary {
+  id: string;
+  name: string;
+  modality: EmbeddingModality;
+  model_id: string;
+  dimensions: number;
+  item_count: number;
+  metadata_keys: string[];
+  source_dataset_id?: string | null;
+  is_sample: boolean;
+  created_at?: string | null;
+}
+
+export interface EmbeddingSpaceListResponse {
+  spaces: EmbeddingSpaceSummary[];
+  total: number;
+}
+
+export interface EmbeddingSpaceDeleteResponse {
+  id: string;
+  deleted: boolean;
+  message: string;
+}
+
+export interface ProjectionRequest {
+  method: ReductionMethod;
+  dimensions: 2 | 3;
+  n_clusters: number;
+  perplexity: number;
+  filter_key?: string;
+  filter_value?: string;
+}
+
+export interface ProjectedPoint {
+  index: number;
+  label: string;
+  snippet: string;
+  x: number;
+  y: number;
+  z?: number | null;
+  cluster?: number | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface ClusterSummary {
+  cluster_id: number;
+  count: number;
+  percentage: number;
+}
+
+export interface ProjectionResponse {
+  space: EmbeddingSpaceSummary;
+  method: ReductionMethod;
+  dimensions: 2 | 3;
+  points: ProjectedPoint[];
+  clusters: ClusterSummary[];
+  explained_variance_ratio?: number[] | null;
+  total_points: number;
+  filtered_points: number;
+  effective_params: Record<string, unknown>;
+}
+
+export interface NearestNeighborItem {
+  index: number;
+  label: string;
+  snippet: string;
+  cosine_similarity: number;
+  euclidean_distance: number;
+  metadata: Record<string, unknown>;
+}
+
+export interface PointInspectionResponse {
+  space_id: string;
+  index: number;
+  label: string;
+  content: string;
+  modality: EmbeddingModality;
+  metadata: Record<string, unknown>;
+  original_dimension: number;
+  vector_norm: number;
+  vector_min: number;
+  vector_max: number;
+  vector_mean: number;
+  vector_preview: number[];
+  neighbors: NearestNeighborItem[];
+  similarity_basis: string;
+}
