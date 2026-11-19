@@ -1,6 +1,14 @@
 import {
-  HealthResponse,
+  CorrelationMatrixResponse,
+  CorrelationMethod,
+  DatasetDeleteResponse,
+  DatasetDistributionsResponse,
   DatasetInspectionResponse,
+  DatasetListResponse,
+  DatasetQualityResponse,
+  DatasetRowsQuery,
+  DatasetRowsResponse,
+  HealthResponse,
   VectorSimilarityRequest,
   VectorSimilarityResponse,
 } from '../types/api';
@@ -16,13 +24,18 @@ export class ApiError extends Error {
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
-  try {
-    const response = await fetch(url, {
-      headers: {
+  const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData;
+  const headers: HeadersInit = isFormData
+    ? { ...options?.headers }
+    : {
         'Content-Type': 'application/json',
         ...options?.headers,
-      },
+      };
+
+  try {
+    const response = await fetch(url, {
       ...options,
+      headers,
     });
 
     if (!response.ok) {
@@ -31,7 +44,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
         const errorJson = await response.json();
         detail = errorJson.detail || detail;
       } catch {
-        // Fallback to text status
+        // Fallback to status message
       }
       throw new ApiError(response.status, detail);
     }
@@ -48,7 +61,58 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
 export const apiClient = {
   getHealth: () => request<HealthResponse>('/health'),
+
+  listDatasets: () => request<DatasetListResponse>('/datasets'),
   getSampleDataset: () => request<DatasetInspectionResponse>('/datasets/sample'),
+  getDataset: (datasetId: string) =>
+    request<DatasetInspectionResponse>(`/datasets/${encodeURIComponent(datasetId)}`),
+
+  uploadDataset: (file: File, name?: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (name && name.trim().length > 0) {
+      formData.append('name', name.trim());
+    }
+    return request<DatasetInspectionResponse>('/datasets/upload', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  deleteDataset: (datasetId: string) =>
+    request<DatasetDeleteResponse>(`/datasets/${encodeURIComponent(datasetId)}`, {
+      method: 'DELETE',
+    }),
+
+  queryDatasetRows: (datasetId: string, query: DatasetRowsQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.search) params.set('search', query.search);
+    if (query.filter_col) params.set('filter_col', query.filter_col);
+    if (query.filter_value) params.set('filter_value', query.filter_value);
+    if (query.sort_by) params.set('sort_by', query.sort_by);
+    if (query.sort_desc !== undefined) params.set('sort_desc', String(query.sort_desc));
+    if (query.offset !== undefined) params.set('offset', String(query.offset));
+    if (query.limit !== undefined) params.set('limit', String(query.limit));
+
+    const qs = params.toString();
+    return request<DatasetRowsResponse>(
+      `/datasets/${encodeURIComponent(datasetId)}/rows${qs ? `?${qs}` : ''}`
+    );
+  },
+
+  getDatasetDistributions: (datasetId: string, bins = 15) =>
+    request<DatasetDistributionsResponse>(
+      `/datasets/${encodeURIComponent(datasetId)}/distributions?bins=${bins}`
+    ),
+
+  getDatasetQuality: (datasetId: string) =>
+    request<DatasetQualityResponse>(`/datasets/${encodeURIComponent(datasetId)}/quality`),
+
+  getDatasetCorrelations: (datasetId: string, method: CorrelationMethod = 'pearson') =>
+    request<CorrelationMatrixResponse>(
+      `/datasets/${encodeURIComponent(datasetId)}/correlations?method=${method}`
+    ),
+
   computeSimilarity: (payload: VectorSimilarityRequest) =>
     request<VectorSimilarityResponse>('/vectors/similarity', {
       method: 'POST',

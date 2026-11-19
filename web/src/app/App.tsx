@@ -56,7 +56,7 @@ export const App: React.FC = () => {
           />
         );
       case 'datasets':
-        return <DatasetExplorer />;
+        return <DatasetExplorer isDark={isDark} />;
       case 'vectors':
         return <VectorExplorer />;
       case 'embeddings':

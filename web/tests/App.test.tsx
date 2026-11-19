@@ -26,6 +26,28 @@ beforeEach(() => {
         });
       }
 
+      if (url === '/api/datasets') {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              datasets: [
+                {
+                  id: 'sample-iris-dataset',
+                  name: 'Iris Benchmark Sample (30 samples)',
+                  row_count: 30,
+                  column_count: 5,
+                  columns: ['sepal_length', 'species'],
+                  memory_bytes: 1200,
+                  is_sample: true,
+                  source_format: 'csv',
+                },
+              ],
+              total: 1,
+            }),
+        });
+      }
+
       if (url.includes('/api/datasets/sample')) {
         return Promise.resolve({
           ok: true,
