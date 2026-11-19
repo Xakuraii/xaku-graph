@@ -5,7 +5,10 @@ pub mod error;
 pub mod vector;
 
 pub use error::VectorError;
-pub use vector::{cosine_similarity, dot_product, euclidean_distance, normalize, norm_l2, VectorRecord};
+pub use vector::{
+    cosine_distance, cosine_similarity, dot_product, euclidean_distance, manhattan_distance,
+    norm_l2, normalize, rank_nearest_neighbors, NeighborRank, SimilarityMetric, VectorRecord,
+};
 
 /// Returns the current version of the XakuGraph core engine.
 pub fn version() -> &'static str {
