@@ -1,0 +1,15 @@
+[package]
+name = "xakugraph-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["XakuGraph Contributors"]
+description = "Core native computation and mathematical primitives for XakuGraph"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+
+[dev-dependencies]
+approx = "0.5"
