@@ -25,8 +25,8 @@ MODULES_STATUS = {
     "vectors": ModuleStatus(
         name="Vector & Similarity Explorer",
         phase=4,
-        status="foundation_ready",
-        description="Mathematical vector metrics, cosine similarity, euclidean distance, and space inspection",
+        status="completed",
+        description="Vector inspection, L2 normalization, cosine/euclidean/manhattan/dot metrics, batch ranking, and pairwise space matrix",
     ),
     "rag": ModuleStatus(
         name="RAG Visualization",

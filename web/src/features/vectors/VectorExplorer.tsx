@@ -4,6 +4,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { useVectorExplorer, VectorTabId } from '../../hooks/useVectorExplorer';
 import { VectorPairwisePanel } from './components/VectorPairwisePanel';
 import { VectorRankingPanel } from './components/VectorRankingPanel';
+import { VectorSpacePanel } from './components/VectorSpacePanel';
 
 interface VectorExplorerProps {
   isDark?: boolean;
@@ -40,6 +41,8 @@ export const VectorExplorer: React.FC<VectorExplorerProps> = ({ isDark = true })
     setMetric,
     searchResult,
     runNeighborSearch,
+    matrixResult,
+    computeSpaceMatrix,
     loading,
     error,
   } = useVectorExplorer();
@@ -53,7 +56,7 @@ export const VectorExplorer: React.FC<VectorExplorerProps> = ({ isDark = true })
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Vector & Similarity Explorer
             </h1>
-            <StatusBadge status="in_development" label="Phase 4 Active" />
+            <StatusBadge status="live" label="Phase 4 Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Explore mathematical vector properties, normalization, pairwise metrics, and
@@ -140,9 +143,16 @@ export const VectorExplorer: React.FC<VectorExplorerProps> = ({ isDark = true })
       )}
 
       {activeTab === 'space' && (
-        <div className="bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-          Pairwise similarity matrix & 2D vector space plot loading in Stage 3.
-        </div>
+        <VectorSpacePanel
+          candidateLines={candidateLines}
+          metric={metric}
+          matrixResult={matrixResult}
+          loading={loading}
+          isDark={isDark}
+          onChangeCandidates={setCandidateLines}
+          onChangeMetric={setMetric}
+          onCompute={() => void computeSpaceMatrix()}
+        />
       )}
     </div>
   );

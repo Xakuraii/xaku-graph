@@ -71,6 +71,27 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
               }),
           });
         }
+        if (url === '/api/vectors/matrix') {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                metric: 'cosine_similarity',
+                original_dimension: 4,
+                labels: ['Neural Search', 'Dense Retrieval'],
+                matrix: [
+                  [1.0, 0.99],
+                  [0.99, 1.0],
+                ],
+                coordinates_2d: [
+                  { id: 'vec-1', label: 'Neural Search', x: 0.5, y: 0.2, norm_l2: 1.3 },
+                  { id: 'vec-2', label: 'Dense Retrieval', x: 0.48, y: 0.19, norm_l2: 1.25 },
+                ],
+                projection_method: 'pca_visual_only',
+                similarity_basis: 'original_high_dimensional_vectors',
+              }),
+          });
+        }
         return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
       })
     );
@@ -97,6 +118,19 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
     await waitFor(() => {
       expect(screen.getByText('Neural Search')).toBeInTheDocument();
       expect(screen.getByText('Original 4D Coordinates')).toBeInTheDocument();
+    });
+  });
+
+  it('switches to Vector Space & Matrix tab and renders heatmap and 2D plot', async () => {
+    render(<VectorExplorer isDark={true} />);
+
+    fireEvent.click(screen.getByText('Vector Space & Matrix'));
+    fireEvent.click(screen.getByText('Compute Vector Space & Matrix'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('vector-matrix-heatmap')).toBeInTheDocument();
+      expect(screen.getByTestId('vector-space-plot')).toBeInTheDocument();
+      expect(screen.getByText('PCA 2D Visual Projection')).toBeInTheDocument();
     });
   });
 });

@@ -51,7 +51,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
         <div className="max-w-2xl space-y-4">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-medium">
             <Zap className="w-3.5 h-3.5" />
-            <span>Phase 3 Embedding Visualization Active</span>
+            <span>Phase 4 Vector & Similarity Explorer Active</span>
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -179,14 +179,14 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Binary className="w-4 h-4" />
               </div>
-              <StatusBadge status="foundation_ready" label="Phase 4 Foundation" />
+              <StatusBadge status="live" label="Phase 4 Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">
                 Vector & Similarity Explorer
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                Cosine similarity, Euclidean distance, dot products, vector normalization, and mathematical metric inspection.
+                Cosine similarity, Euclidean & Manhattan distance, dot products, nearest-neighbor ranking, and vector space matrix.
               </p>
             </div>
           </div>

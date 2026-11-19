@@ -2,6 +2,14 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [0.4.0] - Phase 4 Vector & Similarity Explorer
+
+### Added
+- Native Rust primitives in `xakugraph-core`: `manhattan_distance`, `cosine_distance`, `SimilarityMetric`, `NeighborRank`, and `rank_nearest_neighbors`.
+- Backend vector inspection, nearest-neighbor ranking (`POST /api/vectors/search` supporting custom vectors and cached embedding spaces), and pairwise matrix + 2D visual space endpoints (`POST /api/vectors/matrix`).
+- Enhanced React Vector Explorer (`useVectorExplorer`, `VectorPairwisePanel`, `VectorRankingPanel`, `VectorSpacePanel`) with component-wise comparison charts, multi-metric neighbor ranking tables, pairwise heatmaps, and 2D vector space plots.
+- ADR-0005 and Vectors API documentation (`docs/api/vectors.md`).
+
 ## [0.3.0] - Phase 3 Embedding Visualization
 
 ### Added
