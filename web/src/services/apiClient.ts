@@ -20,6 +20,12 @@ import {
   ProjectionRequest,
   ProjectionResponse,
   ReducerInfo,
+  VectorInspectRequest,
+  VectorInspectResponse,
+  VectorMatrixRequest,
+  VectorMatrixResponse,
+  VectorSearchRequest,
+  VectorSearchResponse,
   VectorSimilarityRequest,
   VectorSimilarityResponse,
 } from '../types/api';
@@ -126,6 +132,24 @@ export const apiClient = {
 
   computeSimilarity: (payload: VectorSimilarityRequest) =>
     request<VectorSimilarityResponse>('/vectors/similarity', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  inspectVector: (payload: VectorInspectRequest) =>
+    request<VectorInspectResponse>('/vectors/inspect', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  searchVectors: (payload: VectorSearchRequest) =>
+    request<VectorSearchResponse>('/vectors/search', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  computeVectorMatrix: (payload: VectorMatrixRequest) =>
+    request<VectorMatrixResponse>('/vectors/matrix', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

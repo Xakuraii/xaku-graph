@@ -158,19 +158,105 @@ export interface CorrelationMatrixResponse {
   matrix: (number | null)[][];
 }
 
+export type DistanceMetric =
+  | 'cosine_similarity'
+  | 'euclidean_distance'
+  | 'dot_product'
+  | 'manhattan_distance';
+
 export interface VectorSimilarityRequest {
   vector_a: number[];
   vector_b: number[];
 }
 
 export interface VectorSimilarityResponse {
+  dimension?: number;
   cosine_similarity: number;
+  cosine_distance?: number;
   euclidean_distance: number;
+  manhattan_distance?: number;
   dot_product: number;
+  angle_degrees?: number;
   norm_a: number;
   norm_b: number;
   normalized_a?: number[];
   normalized_b?: number[];
+}
+
+export interface VectorInspectRequest {
+  label?: string;
+  values: number[];
+}
+
+export interface VectorInspectResponse {
+  label: string;
+  dimension: number;
+  norm_l2: number;
+  norm_l1: number;
+  min_value: number;
+  max_value: number;
+  mean_value: number;
+  std_value: number;
+  zero_count: number;
+  is_unit_normalized: boolean;
+  values: number[];
+  normalized_values: number[];
+}
+
+export interface NamedVectorInput {
+  id: string;
+  label?: string;
+  values: number[];
+}
+
+export interface VectorSearchRequest {
+  query_vector: number[];
+  vectors?: NamedVectorInput[];
+  space_id?: string;
+  metric?: DistanceMetric;
+  top_k?: number;
+}
+
+export interface RankedVectorItem {
+  rank: number;
+  id: string;
+  label: string;
+  score: number;
+  cosine_similarity: number;
+  euclidean_distance: number;
+  dot_product: number;
+  manhattan_distance: number;
+}
+
+export interface VectorSearchResponse {
+  metric: DistanceMetric;
+  query_dimension: number;
+  total_candidates: number;
+  results: RankedVectorItem[];
+  similarity_basis: string;
+}
+
+export interface VectorMatrixRequest {
+  vectors: NamedVectorInput[];
+  metric?: DistanceMetric;
+}
+
+export interface VectorCoordinate2D {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  norm_l2: number;
+}
+
+export interface VectorMatrixResponse {
+  metric: DistanceMetric;
+  original_dimension: number;
+  labels: string[];
+  matrix: number[][];
+  coordinates_2d: VectorCoordinate2D[];
+  projection_method: string;
+  similarity_basis: string;
 }
 
 export type EmbeddingModality = 'text' | 'image';
