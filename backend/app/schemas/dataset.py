@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -22,6 +23,8 @@ class DatasetSummary(BaseModel):
     memory_bytes: int
     is_sample: bool = False
     source_format: str
+    file_size_bytes: int | None = None
+    created_at: datetime | None = None
 
 
 class DatasetInspectionResponse(BaseModel):
@@ -29,3 +32,14 @@ class DatasetInspectionResponse(BaseModel):
     columns: list[ColumnDetail]
     preview_rows: list[dict[str, Any]]
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class DatasetListResponse(BaseModel):
+    datasets: list[DatasetSummary]
+    total: int
+
+
+class DatasetDeleteResponse(BaseModel):
+    id: str
+    deleted: bool
+    message: str

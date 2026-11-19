@@ -26,11 +26,28 @@ class Settings(BaseSettings):
     PROCESSED_DIR: Path = DATA_DIR / "processed"
     CACHE_DIR: Path = DATA_DIR / "cache"
     SAMPLES_DIR: Path = DATA_DIR / "samples"
+    SQLITE_DB_PATH: Path = DATA_DIR / "xakugraph.db"
 
+    ALLOWED_DATASET_EXTENSIONS: tuple[str, ...] = (
+        ".csv",
+        ".json",
+        ".jsonl",
+        ".parquet",
+        ".xlsx",
+    )
     MAX_UPLOAD_SIZE_MB: int = 100
     MAX_PREVIEW_ROWS: int = 100
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @property
+    def max_upload_size_bytes(self) -> int:
+        return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
+    def ensure_storage_dirs(self) -> None:
+        """Create required local storage directories if they do not exist."""
+        for directory in (self.DATA_DIR, self.UPLOADS_DIR, self.PROCESSED_DIR, self.CACHE_DIR):
+            directory.mkdir(parents=True, exist_ok=True)
 
 
 settings = Settings()
