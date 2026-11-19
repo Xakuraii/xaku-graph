@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  rust-check:
+    name: Rust Core (Check & Test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Rust tests
+        run: cargo test -p xakugraph-core
+
+  backend-check:
+    name: Python Backend (Lint & Test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv and dependencies
+        run: |
+          pip install uv
+          cd backend
+          uv venv --python 3.12 .venv
+          uv pip install -e ".[dev]"
+      - name: Run Ruff Lint and Format Checks
+        run: |
+          cd backend
+          .venv/bin/ruff check app tests
+          .venv/bin/ruff format --check app tests
+      - name: Run Pytest
+        run: |
+          cd backend
+          .venv/bin/pytest
+
+  frontend-check:
+    name: Frontend (Lint, Test, Build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: cd web && npm ci
+      - name: TypeScript Lint
+        run: cd web && npm run lint
+      - name: Vitest Tests
+        run: cd web && npm test
+      - name: Build Production Bundle
+        run: cd web && npm run build
