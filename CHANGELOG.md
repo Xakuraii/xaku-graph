@@ -2,6 +2,16 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [0.3.0] - Phase 3 Embedding Visualization
+
+### Added
+- Extensible `EmbeddingAdapterRegistry` with modality enforcement (`text` vs `image`), built-in deterministic local encoders (`local-text-hash-128`, `local-text-tfidf-64`, `local-image-descriptor-96`), and optional neural adapters (`all-MiniLM-L6-v2`, `clip-ViT-B-32`).
+- Dedicated local embedding cache (`EmbeddingRepository`) storing vector matrices as `.npy` files under `data/cache/embeddings/` with SQLite metadata.
+- Dimensionality reduction registry (`PCA`, `t-SNE`, optional `UMAP`) and high-dimensional K-Means clustering.
+- Embeddings REST API (`/api/embeddings/*`) supporting text spaces, dataset-column embedding, local image spaces, 2D/3D projections, metadata filtering, and exact high-dimensional nearest-neighbor inspection.
+- Interactive React Embedding Visualization module (`EmbeddingExplorer`, `useEmbeddingExplorer`, `EmbeddingSpaceBar`, `EmbeddingSpaceBuilder`, `ProjectionControlsBar`, `EmbeddingProjectionPlot`, `EmbeddingPointInspector`) with 2D/3D Plotly scatter plots and click-to-inspect high-dim neighbors.
+- ADR-0004 and Embeddings API documentation (`docs/api/embeddings.md`).
+
 ## [0.2.0] - Phase 2 Dataset Visualization
 
 ### Added

@@ -113,22 +113,62 @@ describe('EmbeddingExplorer Stage 3', () => {
               }),
           });
         }
+        if (url.includes('/points/0')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                space_id: 'sample-ai-concepts-embeddings',
+                index: 0,
+                label: 'Polars DataFrame',
+                content: 'Polars is a fast columnar DataFrame engine built in Rust.',
+                modality: 'text',
+                metadata: { category: 'Data Engineering' },
+                original_dimension: 128,
+                vector_norm: 1.0,
+                vector_min: -0.25,
+                vector_max: 0.31,
+                vector_mean: 0.01,
+                vector_preview: [0.12, -0.05, 0.08],
+                neighbors: [
+                  {
+                    index: 1,
+                    label: 'Apache Parquet',
+                    snippet: 'Apache Parquet stores columnar tabular datasets.',
+                    cosine_similarity: 0.642,
+                    euclidean_distance: 0.846,
+                    metadata: { category: 'Data Engineering' },
+                  },
+                ],
+                similarity_basis: 'original_high_dimensional_vectors',
+              }),
+          });
+        }
         return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
       })
     );
   });
 
-  it('loads sample embedding space and switches projection controls', async () => {
+  it('loads sample embedding space, renders plot, and inspects high-dim point neighbors', async () => {
     render(<EmbeddingExplorer isDark={true} />);
 
     await waitFor(() => {
       expect(screen.getByText('Sample Embedding Space:')).toBeInTheDocument();
-      expect(screen.getByText(/pca \(2D\)/i)).toBeInTheDocument();
+      expect(screen.getByTestId('embedding-plot')).toBeInTheDocument();
+      expect(screen.getByText(/PCA 2D Projection/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByText('3D'));
     await waitFor(() => {
-      expect(screen.getByText(/pca \(3D\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/PCA 3D Projection/i)).toBeInTheDocument();
+    });
+
+    // Click projected point button to inspect original item & high-dim neighbors
+    fireEvent.click(screen.getByRole('button', { name: 'Polars DataFrame' }));
+    await waitFor(() => {
+      expect(screen.getByText('Exact 128D Math')).toBeInTheDocument();
+      expect(screen.getByText('Apache Parquet')).toBeInTheDocument();
+      expect(screen.getByText(/cos: 0\.6420/i)).toBeInTheDocument();
     });
   });
 
@@ -151,7 +191,7 @@ describe('EmbeddingExplorer Stage 3', () => {
     fireEvent.click(screen.getByText('Generate & Project'));
 
     await waitFor(() => {
-      expect(screen.getByText(/Projected 18 of 18 points/i)).toBeInTheDocument();
+      expect(screen.getByTestId('embedding-plot')).toBeInTheDocument();
     });
   });
 });

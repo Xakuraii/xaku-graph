@@ -51,7 +51,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
         <div className="max-w-2xl space-y-4">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-medium">
             <Zap className="w-3.5 h-3.5" />
-            <span>Phase 2 Dataset Visualization Active</span>
+            <span>Phase 3 Embedding Visualization Active</span>
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -158,14 +158,14 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Layers className="w-4 h-4" />
               </div>
-              <StatusBadge status="planned" label="Phase 3 Milestone" />
+              <StatusBadge status="live" label="Phase 3 Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">
                 Embedding Visualization
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                Text and image embeddings, model adapters, PCA/t-SNE/UMAP dimensionality reduction, and 2D/3D space.
+                Text & image embedding adapters, local cache, PCA/t-SNE/UMAP 2D/3D projections, clustering, and high-dim neighbor inspection.
               </p>
             </div>
           </div>

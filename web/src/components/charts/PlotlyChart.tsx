@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import Plotly, { Config, Data, Layout } from 'plotly.js-dist-min';
+import Plotly, { Config, Data, Layout, PlotlyHTMLElement } from 'plotly.js-dist-min';
 
 interface PlotlyChartProps {
   data: Data[];
@@ -8,6 +8,7 @@ interface PlotlyChartProps {
   isDark?: boolean;
   className?: string;
   testId?: string;
+  onPointClick?: (customDataValue: number) => void;
 }
 
 export const PlotlyChart: React.FC<PlotlyChartProps> = ({
@@ -17,8 +18,11 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
   isDark = true,
   className = 'w-full h-80',
   testId,
+  onPointClick,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const clickHandlerRef = useRef(onPointClick);
+  clickHandlerRef.current = onPointClick;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -57,7 +61,25 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
       ...config,
     };
 
-    void Plotly.react(el, data, mergedLayout, mergedConfig);
+    let disposed = false;
+    void Plotly.react(el, data, mergedLayout, mergedConfig).then(() => {
+      if (disposed) return;
+      const plotlyEl = el as unknown as PlotlyHTMLElement & {
+        removeAllListeners?: (eventName: string) => void;
+      };
+      if (typeof plotlyEl.removeAllListeners === 'function') {
+        plotlyEl.removeAllListeners('plotly_click');
+      }
+      if (typeof plotlyEl.on === 'function' && clickHandlerRef.current) {
+        plotlyEl.on('plotly_click', (eventData) => {
+          const firstPoint = eventData?.points?.[0] as { customdata?: unknown } | undefined;
+          const idx = Number(firstPoint?.customdata);
+          if (!Number.isNaN(idx) && clickHandlerRef.current) {
+            clickHandlerRef.current(idx);
+          }
+        });
+      }
+    });
 
     let observer: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
@@ -70,6 +92,7 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     }
 
     return () => {
+      disposed = true;
       observer?.disconnect();
     };
   }, [data, layout, config, isDark]);

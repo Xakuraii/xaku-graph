@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { AlertCircle, Info, RefreshCw } from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
 import { useEmbeddingExplorer } from '../../hooks/useEmbeddingExplorer';
+import { EmbeddingPointInspector } from './components/EmbeddingPointInspector';
+import { EmbeddingProjectionPlot } from './components/EmbeddingProjectionPlot';
 import { EmbeddingSpaceBar } from './components/EmbeddingSpaceBar';
 import { EmbeddingSpaceBuilder } from './components/EmbeddingSpaceBuilder';
 import { ProjectionControlsBar } from './components/ProjectionControlsBar';
@@ -10,7 +12,7 @@ interface EmbeddingExplorerProps {
   isDark?: boolean;
 }
 
-export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = () => {
+export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = ({ isDark = true }) => {
   const [showBuilder, setShowBuilder] = useState(false);
 
   const {
@@ -23,12 +25,16 @@ export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = () => {
     colorBy,
     setColorBy,
     projection,
+    selectedPointIndex,
+    pointInspection,
     loading,
     loadingProjection,
+    loadingPoint,
     creating,
     error,
     selectSpace,
     updateProjectionParams,
+    inspectPoint,
     createTextSpace,
     createDatasetSpace,
     createImageSpace,
@@ -45,7 +51,7 @@ export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = () => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Embedding Visualization
             </h1>
-            <StatusBadge status="in_development" label="Phase 3 Active" />
+            <StatusBadge status="live" label="Phase 3 Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Inspect text and image embeddings using PCA, t-SNE, or UMAP projections with K-Means
@@ -117,14 +123,35 @@ export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = () => {
         onChangeColorBy={setColorBy}
       />
 
-      {projection && (
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-xs text-slate-500 dark:text-slate-400">
-          Projected {projection.filtered_points} of {projection.total_points} points via{' '}
-          <span className="font-mono uppercase text-slate-900 dark:text-white">
-            {projection.method} ({projection.dimensions}D)
-          </span>
-          . Interactive scatter plot and point inspector loading in Stage 4.
+      {projection ? (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          <div className="xl:col-span-8">
+            <EmbeddingProjectionPlot
+              projection={projection}
+              colorBy={colorBy}
+              selectedPointIndex={selectedPointIndex}
+              loading={loadingProjection}
+              isDark={isDark}
+              onSelectPoint={(idx) => void inspectPoint(idx)}
+            />
+          </div>
+          <div className="xl:col-span-4">
+            <EmbeddingPointInspector
+              inspection={pointInspection}
+              loading={loadingPoint}
+              onSelectNeighbor={(idx) => void inspectPoint(idx)}
+            />
+          </div>
         </div>
+      ) : (
+        loading && (
+          <div className="h-64 flex flex-col items-center justify-center space-y-3 bg-slate-100/60 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+            <RefreshCw className="w-6 h-6 text-brand-500 animate-spin" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Loading embedding projection...
+            </p>
+          </div>
+        )
       )}
     </div>
   );

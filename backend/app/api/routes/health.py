@@ -19,8 +19,8 @@ MODULES_STATUS = {
     "embeddings": ModuleStatus(
         name="Embedding Visualization",
         phase=3,
-        status="planned",
-        description="Dimensionality reduction (PCA, t-SNE, UMAP), clustering, and 2D/3D inspection",
+        status="completed",
+        description="Text & image embedding adapters, local .npy cache, PCA/t-SNE/UMAP projections, clustering, and 2D/3D inspection",
     ),
     "vectors": ModuleStatus(
         name="Vector & Similarity Explorer",
