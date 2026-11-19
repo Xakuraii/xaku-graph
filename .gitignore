@@ -1,0 +1,101 @@
+# ============================================
+# Git Ignore for XakuGraph Monorepo
+# ============================================
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Node.js and Frontend
+node_modules/
+.npm/
+.yarn/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+web/dist/
+web/dist-ssr/
+*.local
+
+# Rust and Tauri
+target/
+desktop/src-tauri/target/
+
+# Data Directories (keep structure with .gitkeep, ignore generated content)
+data/uploads/*
+!data/uploads/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+
+# Databases & Cache
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.parquet
+
+# Model weights & large binary artifacts
+*.onnx
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.gguf
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-workspace
+*.swp
+*.swo
+
+# Temporary / Agent Runtime
+tmp/
+temp/
+.agent/runtime/
