@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import datasets, health, vectors
+from app.api.routes import datasets, embeddings, health, vectors
 from app.core.config import settings
 
 app = FastAPI(
@@ -24,6 +24,7 @@ app.add_middleware(
 # Register API Routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(datasets.router, prefix="/api/datasets", tags=["Datasets"])
+app.include_router(embeddings.router, prefix="/api/embeddings", tags=["Embeddings"])
 app.include_router(vectors.router, prefix="/api/vectors", tags=["Vectors"])
 
 
