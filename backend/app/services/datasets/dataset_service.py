@@ -95,11 +95,16 @@ class DatasetService:
             series = df[col_name]
             dtype_str = str(series.dtype)
             null_count = series.null_count()
+            null_pct = round((null_count / row_count) * 100.0, 2) if row_count > 0 else 0.0
             unique_count = series.n_unique()
 
             min_val: Any = None
             max_val: Any = None
             mean_val: float | None = None
+            median_val: float | None = None
+            std_val: float | None = None
+            q1_val: float | None = None
+            q3_val: float | None = None
 
             if series.dtype.is_numeric():
                 non_null = series.drop_nulls()
@@ -109,16 +114,25 @@ class DatasetService:
                     min_val = _safe_number(non_null.min())
                     max_val = _safe_number(non_null.max())
                     mean_val = _safe_number(non_null.mean())
+                    median_val = _safe_number(non_null.median())
+                    std_val = _safe_number(non_null.std())
+                    q1_val = _safe_number(non_null.quantile(0.25))
+                    q3_val = _safe_number(non_null.quantile(0.75))
 
             col_details.append(
                 ColumnDetail(
                     name=col_name,
                     dtype=dtype_str,
                     null_count=null_count,
+                    null_percentage=null_pct,
                     unique_count=unique_count,
                     min_value=min_val,
                     max_value=max_val,
                     mean_value=mean_val,
+                    median_value=median_val,
+                    std_value=std_val,
+                    q1_value=q1_val,
+                    q3_value=q3_val,
                 )
             )
 

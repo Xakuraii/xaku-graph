@@ -1,12 +1,17 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
 
 from app.schemas.dataset import (
+    CorrelationMatrixResponse,
     DatasetDeleteResponse,
+    DatasetDistributionsResponse,
     DatasetInspectionResponse,
     DatasetListResponse,
+    DatasetQualityResponse,
+    DatasetRowsResponse,
 )
+from app.services.datasets.analysis_service import DatasetAnalysisService
 from app.services.datasets.dataset_service import (
     DatasetNotFoundError,
     DatasetProtectedError,
@@ -114,4 +119,105 @@ def delete_dataset(dataset_id: str) -> DatasetDeleteResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete dataset '{dataset_id}': {err}",
+        ) from err
+
+
+@router.get("/{dataset_id}/rows", response_model=DatasetRowsResponse)
+def get_dataset_rows(
+    dataset_id: str,
+    search: str | None = Query(default=None, description="Global substring search across columns"),
+    filter_col: str | None = Query(default=None, description="Specific column to filter"),
+    filter_value: str | None = Query(
+        default=None, description="Substring match value for filter_col"
+    ),
+    sort_by: str | None = Query(default=None, description="Column name to sort by"),
+    sort_desc: bool = Query(default=False, description="Sort descending if true"),
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=500),
+) -> DatasetRowsResponse:
+    """Query paginated, searchable, filterable, and sortable dataset rows."""
+    try:
+        _, df = dataset_service.load_dataframe(dataset_id)
+        return DatasetAnalysisService.query_rows(
+            df=df,
+            dataset_id=dataset_id,
+            search=search,
+            filter_col=filter_col,
+            filter_value=filter_value,
+            sort_by=sort_by,
+            sort_desc=sort_desc,
+            offset=offset,
+            limit=limit,
+        )
+    except DatasetNotFoundError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err)) from err
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)) from err
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to query rows for '{dataset_id}': {err}",
+        ) from err
+
+
+@router.get("/{dataset_id}/distributions", response_model=DatasetDistributionsResponse)
+def get_dataset_distributions(
+    dataset_id: str,
+    bins: int = Query(default=15, ge=2, le=100, description="Number of histogram bins"),
+    top_categories: int = Query(
+        default=15, ge=1, le=50, description="Max categorical values to return per column"
+    ),
+) -> DatasetDistributionsResponse:
+    """Compute histograms, box-plot quartiles, and categorical value counts."""
+    try:
+        _, df = dataset_service.load_dataframe(dataset_id)
+        return DatasetAnalysisService.compute_distributions(
+            df=df,
+            dataset_id=dataset_id,
+            bins=bins,
+            top_categories=top_categories,
+        )
+    except DatasetNotFoundError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err)) from err
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to compute distributions for '{dataset_id}': {err}",
+        ) from err
+
+
+@router.get("/{dataset_id}/quality", response_model=DatasetQualityResponse)
+def get_dataset_quality(dataset_id: str) -> DatasetQualityResponse:
+    """Analyze missing values, duplicates, constant columns, and IQR/Z-score outliers."""
+    try:
+        _, df = dataset_service.load_dataframe(dataset_id)
+        return DatasetAnalysisService.compute_quality(df=df, dataset_id=dataset_id)
+    except DatasetNotFoundError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err)) from err
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to compute quality report for '{dataset_id}': {err}",
+        ) from err
+
+
+@router.get("/{dataset_id}/correlations", response_model=CorrelationMatrixResponse)
+def get_dataset_correlations(
+    dataset_id: str,
+    method: Literal["pearson", "spearman"] = Query(default="pearson"),
+) -> CorrelationMatrixResponse:
+    """Compute Pearson or Spearman correlation matrix across numeric columns."""
+    try:
+        _, df = dataset_service.load_dataframe(dataset_id)
+        return DatasetAnalysisService.compute_correlations(
+            df=df,
+            dataset_id=dataset_id,
+            method=method,
+        )
+    except DatasetNotFoundError as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err)) from err
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to compute correlations for '{dataset_id}': {err}",
         ) from err
