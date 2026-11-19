@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     UPLOADS_DIR: Path = DATA_DIR / "uploads"
     PROCESSED_DIR: Path = DATA_DIR / "processed"
     CACHE_DIR: Path = DATA_DIR / "cache"
+    EMBEDDING_CACHE_DIR: Path = CACHE_DIR / "embeddings"
     SAMPLES_DIR: Path = DATA_DIR / "samples"
     SQLITE_DB_PATH: Path = DATA_DIR / "xakugraph.db"
 
@@ -35,8 +36,16 @@ class Settings(BaseSettings):
         ".parquet",
         ".xlsx",
     )
+    ALLOWED_IMAGE_EXTENSIONS: tuple[str, ...] = (
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".bmp",
+    )
     MAX_UPLOAD_SIZE_MB: int = 100
     MAX_PREVIEW_ROWS: int = 100
+    MAX_EMBEDDING_ITEMS: int = 2000
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -46,7 +55,13 @@ class Settings(BaseSettings):
 
     def ensure_storage_dirs(self) -> None:
         """Create required local storage directories if they do not exist."""
-        for directory in (self.DATA_DIR, self.UPLOADS_DIR, self.PROCESSED_DIR, self.CACHE_DIR):
+        for directory in (
+            self.DATA_DIR,
+            self.UPLOADS_DIR,
+            self.PROCESSED_DIR,
+            self.CACHE_DIR,
+            self.EMBEDDING_CACHE_DIR,
+        ):
             directory.mkdir(parents=True, exist_ok=True)
 
 
