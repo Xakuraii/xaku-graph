@@ -130,4 +130,25 @@ describe('XakuGraph App Foundation', () => {
       expect(screen.getByText('Calculate Similarity & Distance')).toBeInTheDocument();
     });
   });
+
+  it('toggles light/dark theme via AnimatedThemeToggler', async () => {
+    document.documentElement.classList.add('dark');
+    localStorage.clear();
+
+    render(<App />);
+    const toggleBtn = screen.getByRole('button', { name: /Toggle color theme/i });
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+    fireEvent.click(toggleBtn);
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+      expect(localStorage.getItem('theme')).toBe('light');
+    });
+
+    fireEvent.click(toggleBtn);
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+      expect(localStorage.getItem('theme')).toBe('dark');
+    });
+  });
 });

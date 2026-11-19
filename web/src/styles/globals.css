@@ -11,3 +11,24 @@ body {
   margin: 0;
   padding: 0;
 }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  will-change: clip-path;
+}
+
+/* Scoped to AnimatedThemeToggler — keeps clip-path reveal synced and prevents child CSS transitions from lagging during snapshot. */
+html[data-magicui-theme-vt="active"]::view-transition-group(root) {
+  animation-duration: var(--magicui-theme-toggle-vt-duration);
+}
+
+html[data-magicui-theme-vt="active"] *,
+html[data-magicui-theme-vt="active"] *::before,
+html[data-magicui-theme-vt="active"] *::after {
+  transition: none !important;
+}

@@ -10,14 +10,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
     switch (status) {
       case 'foundation_ready':
       case 'live':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30';
       case 'sample':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+        return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30';
       case 'in_development':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+        return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30';
       case 'planned':
       default:
-        return 'bg-slate-700/30 text-slate-400 border-slate-700/50';
+        return 'bg-slate-200/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700/70';
     }
   };
 
