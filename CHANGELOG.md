@@ -2,6 +2,17 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [0.2.0] - Phase 2 Dataset Visualization
+
+### Added
+- Dataset loader adapter registry supporting `.csv`, `.json`, `.jsonl`, `.parquet`, and `.xlsx` (`fastexcel` / Polars `calamine`).
+- Persistent SQLite metadata repository (`DatasetRepository`) and local Parquet processed cache.
+- Secure multipart file upload (`POST /api/datasets/upload`), dataset listing (`GET /api/datasets`), inspection (`GET /api/datasets/{id}`), and deletion (`DELETE /api/datasets/{id}`) with path traversal guards and streaming size limits.
+- Statistical analysis engine (`DatasetAnalysisService`) with paginated/searchable/filterable/sortable row queries, histogram & box-plot distributions, missing-value & duplicate quality checks, IQR & Z-score outlier detection, and Pearson/Spearman correlation matrices.
+- Interactive React frontend powered by `plotly.js-dist-min` (`PlotlyChart`, `useDatasetExplorer`, `DatasetManagerBar`, `DatasetRowsTable`, `DatasetDistributionsPanel`, `DatasetQualityPanel`, `DatasetCorrelationsPanel`) and live Studio Dashboard registry integration.
+- Automated unit and API tests covering loaders, path security, upload limits, numerical analysis, and React visualization tabs.
+- ADR-0003 and Datasets API documentation (`docs/api/datasets.md`).
+
 ## [0.1.0] - Phase 0 & Phase 1 Foundation
 
 ### Added

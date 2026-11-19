@@ -4,22 +4,29 @@ import {
   BarChart3,
   GitCompare,
   Info,
+  LayoutList,
   RefreshCw,
   ShieldCheck,
   Table,
-  LayoutList,
 } from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
 import { DatasetTabId, useDatasetExplorer } from '../../hooks/useDatasetExplorer';
+import { DatasetCorrelationsPanel } from './components/DatasetCorrelationsPanel';
+import { DatasetDistributionsPanel } from './components/DatasetDistributionsPanel';
 import { DatasetManagerBar } from './components/DatasetManagerBar';
 import { DatasetOverviewPanel } from './components/DatasetOverviewPanel';
+import { DatasetQualityPanel } from './components/DatasetQualityPanel';
 import { DatasetRowsTable } from './components/DatasetRowsTable';
 
 interface DatasetExplorerProps {
   isDark?: boolean;
 }
 
-const TABS: { id: DatasetTabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const TABS: {
+  id: DatasetTabId;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { id: 'overview', label: 'Overview & Schema', icon: LayoutList },
   { id: 'data', label: 'Data Table & Filter', icon: Table },
   { id: 'distributions', label: 'Distributions & Box Plots', icon: BarChart3 },
@@ -27,7 +34,7 @@ const TABS: { id: DatasetTabId; label: string; icon: React.ComponentType<{ class
   { id: 'correlations', label: 'Correlations & Relationships', icon: GitCompare },
 ];
 
-export const DatasetExplorer: React.FC<DatasetExplorerProps> = () => {
+export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ isDark = true }) => {
   const {
     datasets,
     activeDatasetId,
@@ -35,7 +42,14 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = () => {
     setActiveTab,
     inspection,
     rowsData,
+    distributions,
+    quality,
+    correlations,
     rowsQuery,
+    histogramBins,
+    setHistogramBins,
+    correlationMethod,
+    setCorrelationMethod,
     loading,
     loadingAnalysis,
     uploading,
@@ -56,10 +70,11 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = () => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Dataset Visualization
             </h1>
-            <StatusBadge status="in_development" label="Phase 2 Active" />
+            <StatusBadge status="live" label="Phase 2 Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Import local CSV, JSON, JSONL, Parquet, or Excel datasets to inspect distributions, quality, outliers, and correlations.
+            Import local CSV, JSON, JSONL, Parquet, or Excel datasets to inspect distributions,
+            quality, outliers, and correlations.
           </p>
         </div>
 
@@ -154,12 +169,28 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = () => {
               onUpdateQuery={updateRowsQuery}
             />
           )}
-          {(activeTab === 'distributions' ||
-            activeTab === 'quality' ||
-            activeTab === 'correlations') && (
-            <div className="bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-              Visualization panel initializing in Stage 4.
-            </div>
+          {activeTab === 'distributions' && (
+            <DatasetDistributionsPanel
+              data={distributions}
+              bins={histogramBins}
+              loading={loadingAnalysis}
+              isDark={isDark}
+              onChangeBins={setHistogramBins}
+            />
+          )}
+          {activeTab === 'quality' && (
+            <DatasetQualityPanel data={quality} loading={loadingAnalysis} isDark={isDark} />
+          )}
+          {activeTab === 'correlations' && (
+            <DatasetCorrelationsPanel
+              correlations={correlations}
+              columns={inspection.columns}
+              previewRows={inspection.preview_rows}
+              method={correlationMethod}
+              loading={loadingAnalysis}
+              isDark={isDark}
+              onChangeMethod={setCorrelationMethod}
+            />
           )}
         </div>
       )}

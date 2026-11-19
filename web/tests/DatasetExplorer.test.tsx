@@ -6,8 +6,8 @@ const SAMPLE_SUMMARY = {
   id: 'sample-iris-dataset',
   name: 'Iris Benchmark Sample (30 samples)',
   row_count: 30,
-  column_count: 2,
-  columns: ['sepal_length', 'species'],
+  column_count: 3,
+  columns: ['sepal_length', 'petal_length', 'species'],
   memory_bytes: 1200,
   is_sample: true,
   source_format: 'csv',
@@ -24,7 +24,7 @@ const UPLOADED_SUMMARY = {
   source_format: 'csv',
 };
 
-describe('DatasetExplorer Stage 3', () => {
+describe('DatasetExplorer Phase 2', () => {
   beforeEach(() => {
     vi.stubGlobal(
       'fetch',
@@ -56,8 +56,32 @@ describe('DatasetExplorer Stage 3', () => {
                     max_value: 7.6,
                     std_value: 0.8,
                   },
+                  {
+                    name: 'petal_length',
+                    dtype: 'Float64',
+                    null_count: 0,
+                    null_percentage: 0,
+                    unique_count: 18,
+                    min_value: 1.3,
+                    q1_value: 1.5,
+                    median_value: 4.5,
+                    mean_value: 3.9,
+                    q3_value: 5.6,
+                    max_value: 6.6,
+                    std_value: 1.8,
+                  },
+                  {
+                    name: 'species',
+                    dtype: 'String',
+                    null_count: 0,
+                    null_percentage: 0,
+                    unique_count: 3,
+                  },
                 ],
-                preview_rows: [{ sepal_length: 5.1, species: 'setosa' }],
+                preview_rows: [
+                  { sepal_length: 5.1, petal_length: 1.4, species: 'setosa' },
+                  { sepal_length: 7.0, petal_length: 4.7, species: 'versicolor' },
+                ],
                 metadata: {},
               }),
           });
@@ -118,8 +142,83 @@ describe('DatasetExplorer Stage 3', () => {
                 filtered_rows: 1,
                 offset: 0,
                 limit: 25,
-                columns: ['sepal_length', 'species'],
-                rows: [{ sepal_length: 5.1, species: 'setosa' }],
+                columns: ['sepal_length', 'petal_length', 'species'],
+                rows: [{ sepal_length: 5.1, petal_length: 1.4, species: 'setosa' }],
+              }),
+          });
+        }
+        if (url.includes('/distributions')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                dataset_id: 'sample-iris-dataset',
+                bins: 15,
+                distributions: [
+                  {
+                    column: 'sepal_length',
+                    dtype: 'Float64',
+                    kind: 'numeric',
+                    total_count: 30,
+                    non_null_count: 30,
+                    histogram: [{ start: 4.4, end: 6.0, count: 15 }],
+                    boxplot: {
+                      min: 4.4,
+                      q1: 5.0,
+                      median: 5.8,
+                      q3: 6.5,
+                      max: 7.6,
+                      iqr: 1.5,
+                      lower_fence: 2.75,
+                      upper_fence: 8.75,
+                      outlier_count: 0,
+                      sample_outliers: [],
+                    },
+                  },
+                ],
+              }),
+          });
+        }
+        if (url.includes('/quality')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                dataset_id: 'sample-iris-dataset',
+                row_count: 30,
+                column_count: 3,
+                total_cells: 90,
+                total_missing_cells: 0,
+                completeness_percentage: 100.0,
+                duplicate_row_count: 0,
+                columns: [
+                  {
+                    column: 'sepal_length',
+                    dtype: 'Float64',
+                    null_count: 0,
+                    null_percentage: 0,
+                    unique_count: 15,
+                    is_constant: false,
+                    iqr_outlier_count: 0,
+                    zscore_outlier_count: 0,
+                    outlier_percentage: 0,
+                  },
+                ],
+              }),
+          });
+        }
+        if (url.includes('/correlations')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                dataset_id: 'sample-iris-dataset',
+                method: url.includes('spearman') ? 'spearman' : 'pearson',
+                columns: ['sepal_length', 'petal_length'],
+                matrix: [
+                  [1.0, 0.87],
+                  [0.87, 1.0],
+                ],
               }),
           });
         }
@@ -160,6 +259,42 @@ describe('DatasetExplorer Stage 3', () => {
     await waitFor(() => {
       expect(screen.getByText('sales.csv')).toBeInTheDocument();
       expect(screen.getByText('revenue')).toBeInTheDocument();
+    });
+  });
+
+  it('renders Distributions, Quality, and Correlation visualization tabs', async () => {
+    render(<DatasetExplorer isDark={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Iris Benchmark Sample (30 samples)')).toBeInTheDocument();
+    });
+
+    // Distributions Tab
+    fireEvent.click(screen.getByText('Distributions & Box Plots'));
+    await waitFor(() => {
+      expect(screen.getByTestId('histogram-chart')).toBeInTheDocument();
+      expect(screen.getByTestId('boxplot-chart')).toBeInTheDocument();
+      expect(screen.getByText('IQR Outliers')).toBeInTheDocument();
+    });
+
+    // Quality & Outliers Tab
+    fireEvent.click(screen.getByText('Data Quality & Outliers'));
+    await waitFor(() => {
+      expect(screen.getByText('100.00%')).toBeInTheDocument();
+      expect(screen.getByTestId('missing-chart')).toBeInTheDocument();
+      expect(screen.getByTestId('outlier-chart')).toBeInTheDocument();
+    });
+
+    // Correlations Tab
+    fireEvent.click(screen.getByText('Correlations & Relationships'));
+    await waitFor(() => {
+      expect(screen.getByTestId('correlation-heatmap')).toBeInTheDocument();
+      expect(screen.getByTestId('scatter-chart')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('spearman'));
+    await waitFor(() => {
+      expect(screen.getByText('Spearman (Rank) Correlation Heatmap')).toBeInTheDocument();
     });
   });
 });

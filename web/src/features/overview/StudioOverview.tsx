@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Database,
   Layers,
@@ -9,10 +9,12 @@ import {
   Shield,
   Zap,
   Terminal,
+  FileSpreadsheet,
 } from 'lucide-react';
-import { HealthResponse } from '../../types/api';
+import { DatasetSummary, HealthResponse } from '../../types/api';
 import { NavModuleId } from '../../layouts/AppLayout';
 import { StatusBadge } from '../../components/StatusBadge';
+import { apiClient } from '../../services/apiClient';
 
 interface StudioOverviewProps {
   health: HealthResponse | null;
@@ -23,6 +25,25 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
   health,
   onNavigate,
 }) => {
+  const [recentDatasets, setRecentDatasets] = useState<DatasetSummary[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    apiClient
+      .listDatasets()
+      .then((res) => {
+        if (active && Array.isArray(res.datasets)) {
+          setRecentDatasets(res.datasets.slice(0, 5));
+        }
+      })
+      .catch(() => {
+        // Backend offline; keep empty
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Studio Header Banner */}
@@ -30,7 +51,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
         <div className="max-w-2xl space-y-4">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-medium">
             <Zap className="w-3.5 h-3.5" />
-            <span>Phase 0 & 1 Architecture Foundation Active</span>
+            <span>Phase 2 Dataset Visualization Active</span>
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -116,14 +137,14 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Database className="w-4 h-4" />
               </div>
-              <StatusBadge status="foundation_ready" label="Phase 2 Foundation" />
+              <StatusBadge status="live" label="Phase 2 Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">
                 Dataset Visualization
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                CSV, JSON, JSONL, Parquet ingestion, statistical profiling, null checks, and tabular preview.
+                CSV, JSON, JSONL, Parquet & Excel ingestion, histograms, box plots, quality & outlier detection, and correlations.
               </p>
             </div>
           </div>
@@ -213,6 +234,43 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Local Datasets Registry */}
+      {recentDatasets.length > 0 && (
+        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Local Dataset Registry</h2>
+            <button
+              onClick={() => onNavigate('datasets')}
+              className="text-xs text-brand-400 hover:text-brand-300 inline-flex items-center space-x-1"
+            >
+              <span>Open Explorer</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {recentDatasets.map((ds) => (
+              <div
+                key={ds.id}
+                onClick={() => onNavigate('datasets')}
+                className="cursor-pointer bg-slate-950/60 hover:bg-slate-850 border border-slate-800 rounded-lg p-3 flex items-center justify-between transition-colors"
+              >
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <FileSpreadsheet className="w-4 h-4 text-brand-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-white truncate">{ds.name}</p>
+                    <p className="text-[11px] text-slate-400 font-mono">
+                      {ds.row_count.toLocaleString()} rows · {ds.column_count} cols ·{' '}
+                      {ds.source_format.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+                {ds.is_sample && <StatusBadge status="sample" label="Sample" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Engine Status & System Info */}
       {health && (

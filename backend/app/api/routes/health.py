@@ -13,8 +13,8 @@ MODULES_STATUS = {
     "datasets": ModuleStatus(
         name="Dataset Visualization",
         phase=2,
-        status="foundation_ready",
-        description="Dataset parsing, statistics, overview, distributions, and quality checks",
+        status="completed",
+        description="CSV, JSON, JSONL, Parquet, and Excel import, statistics, distributions, quality checks, outliers, and correlations",
     ),
     "embeddings": ModuleStatus(
         name="Embedding Visualization",
