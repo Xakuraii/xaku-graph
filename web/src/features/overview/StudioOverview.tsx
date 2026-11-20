@@ -51,7 +51,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
         <div className="max-w-2xl space-y-4">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-700 dark:text-brand-400 text-xs font-medium">
             <Zap className="w-3.5 h-3.5" />
-            <span>Phase 4 Vector & Similarity Explorer Active</span>
+            <span>Phase 5 RAG Visualization Active</span>
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
@@ -224,7 +224,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <GitGraph className="w-4 h-4" />
               </div>
-              <StatusBadge status="planned" label="Phase 5 Milestone" />
+              <StatusBadge status="live" label="Phase 5 Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
@@ -232,7 +232,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                 Document chunk inspection, ChromaDB and Qdrant read-only connectors, retrieval
-                ranking, and similarity debugging.
+                ranking, and side-by-side comparison.
               </p>
             </div>
           </div>

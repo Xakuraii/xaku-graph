@@ -28,6 +28,17 @@ import {
   VectorSearchResponse,
   VectorSimilarityRequest,
   VectorSimilarityResponse,
+  CreateRagSandboxRequest,
+  ExternalConnectionConfig,
+  RagCollectionInspectResponse,
+  RagCollectionListResponse,
+  RagCollectionSummary,
+  RagCompareRequest,
+  RagCompareResponse,
+  RagDeleteResponse,
+  RagSearchRequest,
+  RagSearchResponse,
+  VectorDbConnectorInfo,
 } from '../types/api';
 
 const API_BASE = '/api';
@@ -206,4 +217,61 @@ export const apiClient = {
     request<PointInspectionResponse>(
       `/embeddings/spaces/${encodeURIComponent(spaceId)}/points/${pointIndex}?top_k=${topK}`
     ),
+
+  listRagConnectors: () => request<VectorDbConnectorInfo[]>('/rag/connectors'),
+
+  listRagCollections: () => request<RagCollectionListResponse>('/rag/collections'),
+
+  inspectRagCollection: (
+    collectionId: string,
+    params: { doc_id?: string; search?: string; offset?: number; limit?: number } = {}
+  ) => {
+    const sp = new URLSearchParams();
+    if (params.doc_id) sp.set('doc_id', params.doc_id);
+    if (params.search) sp.set('search', params.search);
+    if (params.offset !== undefined) sp.set('offset', String(params.offset));
+    if (params.limit !== undefined) sp.set('limit', String(params.limit));
+    const qs = sp.toString();
+    return request<RagCollectionInspectResponse>(
+      `/rag/collections/${encodeURIComponent(collectionId)}${qs ? `?${qs}` : ''}`
+    );
+  },
+
+  listExternalRagCollections: (config: ExternalConnectionConfig) =>
+    request<RagCollectionListResponse>('/rag/external/collections', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    }),
+
+  inspectExternalRagCollection: (config: ExternalConnectionConfig, offset = 0, limit = 50) =>
+    request<RagCollectionInspectResponse>(
+      `/rag/external/inspect?offset=${offset}&limit=${limit}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(config),
+      }
+    ),
+
+  createRagSandbox: (payload: CreateRagSandboxRequest) =>
+    request<RagCollectionSummary>('/rag/sandbox', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  deleteRagSandbox: (collectionId: string) =>
+    request<RagDeleteResponse>(`/rag/sandbox/${encodeURIComponent(collectionId)}`, {
+      method: 'DELETE',
+    }),
+
+  searchRag: (payload: RagSearchRequest) =>
+    request<RagSearchResponse>('/rag/search', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  compareRag: (payload: RagCompareRequest) =>
+    request<RagCompareResponse>('/rag/compare', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };

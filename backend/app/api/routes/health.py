@@ -31,8 +31,8 @@ MODULES_STATUS = {
     "rag": ModuleStatus(
         name="RAG Visualization",
         phase=5,
-        status="planned",
-        description="Chunk inspection, retrieval playground, ChromaDB and Qdrant connectors",
+        status="completed",
+        description="Document & chunk inspection, read-only ChromaDB/Qdrant connectors, retrieval playground, and side-by-side comparison",
     ),
     "machine_learning": ModuleStatus(
         name="ML Visualization",

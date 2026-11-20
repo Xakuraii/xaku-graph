@@ -59,7 +59,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'RAG Visualization',
     phase: 'Phase 5',
     icon: GitGraph,
-    status: 'planned',
+    status: 'live',
   },
   {
     id: 'ml',
@@ -128,10 +128,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 Studio Status
               </span>
-              <StatusBadge status="live" label="Phase 4 Active" />
+              <StatusBadge status="live" label="Phase 5 Active" />
             </div>
             <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-              Datasets, Embeddings (2D/3D), and Vector & Similarity modules are active locally.
+              Datasets, Embeddings (2D/3D), Vectors, and RAG Visualization modules are active locally.
             </p>
           </div>
         </div>

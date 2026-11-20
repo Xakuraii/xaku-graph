@@ -259,6 +259,173 @@ export interface VectorMatrixResponse {
   similarity_basis: string;
 }
 
+export type ConnectorType = 'local_rag' | 'chromadb' | 'qdrant';
+export type RagSimilarityMetric = 'cosine_similarity' | 'euclidean_distance' | 'dot_product';
+
+export interface VectorDbConnectorInfo {
+  connector_type: ConnectorType;
+  name: string;
+  description: string;
+  available: boolean;
+  read_only: boolean;
+  connection_fields: string[];
+  install_hint?: string | null;
+}
+
+export interface ExternalConnectionConfig {
+  connector_type: 'chromadb' | 'qdrant';
+  path?: string;
+  host?: string;
+  port?: number;
+  collection_name?: string;
+}
+
+export interface RagCollectionSummary {
+  id: string;
+  name: string;
+  connector_type: ConnectorType;
+  document_count: number;
+  chunk_count: number;
+  dimension: number;
+  model_id?: string | null;
+  read_only: boolean;
+  is_sample: boolean;
+  metadata_keys: string[];
+  created_at?: string | null;
+}
+
+export interface RagCollectionListResponse {
+  collections: RagCollectionSummary[];
+  total: number;
+}
+
+export interface RagDocumentSummary {
+  doc_id: string;
+  title: string;
+  source: string;
+  chunk_count: number;
+  total_chars: number;
+  metadata: Record<string, unknown>;
+}
+
+export interface RagChunkDetail {
+  chunk_id: string;
+  doc_id: string;
+  doc_title: string;
+  chunk_index: number;
+  content: string;
+  char_count: number;
+  char_start?: number | null;
+  char_end?: number | null;
+  metadata: Record<string, unknown>;
+  embedding_dimension: number;
+  embedding_norm?: number | null;
+  embedding_preview: number[];
+}
+
+export interface RagCollectionInspectResponse {
+  collection: RagCollectionSummary;
+  documents: RagDocumentSummary[];
+  chunks: RagChunkDetail[];
+  total_chunks: number;
+  offset: number;
+  limit: number;
+}
+
+export interface RagDocumentInput {
+  title: string;
+  source?: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CreateRagSandboxRequest {
+  name: string;
+  documents: RagDocumentInput[];
+  chunk_size: number;
+  chunk_overlap: number;
+  model_id: string;
+}
+
+export interface RagDeleteResponse {
+  id: string;
+  deleted: boolean;
+  message: string;
+}
+
+export interface RagSearchRequest {
+  collection_id: string;
+  query: string;
+  top_k?: number;
+  metric?: RagSimilarityMetric;
+  model_id?: string;
+  filter_key?: string;
+  filter_value?: string;
+  connection_config?: ExternalConnectionConfig;
+}
+
+export interface RagRetrievedChunk {
+  rank: number;
+  chunk_id: string;
+  doc_id: string;
+  doc_title: string;
+  chunk_index: number;
+  content: string;
+  score: number;
+  cosine_similarity: number;
+  euclidean_distance: number;
+  dot_product: number;
+  metadata: Record<string, unknown>;
+  embedding_preview: number[];
+}
+
+export interface RagSearchResponse {
+  collection_id: string;
+  query: string;
+  metric: RagSimilarityMetric;
+  model_id: string;
+  query_vector_dimension: number;
+  query_vector_preview: number[];
+  total_candidates: number;
+  results: RagRetrievedChunk[];
+  similarity_basis: string;
+}
+
+export interface RagCompareStrategy {
+  label: string;
+  collection_id: string;
+  metric: RagSimilarityMetric;
+  model_id?: string;
+  top_k: number;
+}
+
+export interface RagCompareRequest {
+  query: string;
+  strategy_a: RagCompareStrategy;
+  strategy_b: RagCompareStrategy;
+}
+
+export interface RagChunkComparisonItem {
+  chunk_id: string;
+  doc_title: string;
+  chunk_index: number;
+  rank_a?: number | null;
+  rank_b?: number | null;
+  rank_delta?: number | null;
+  score_a?: number | null;
+  score_b?: number | null;
+  status: 'both' | 'only_a' | 'only_b';
+}
+
+export interface RagCompareResponse {
+  query: string;
+  run_a: RagSearchResponse;
+  run_b: RagSearchResponse;
+  overlap_count: number;
+  jaccard_overlap: number;
+  comparison_items: RagChunkComparisonItem[];
+}
+
 export type EmbeddingModality = 'text' | 'image';
 export type ReductionMethod = 'pca' | 'tsne' | 'umap';
 
