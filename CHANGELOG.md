@@ -2,6 +2,14 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [0.5.0] - Phase 5 RAG Visualization
+
+### Added
+- Read-only `VectorDbConnectorRegistry` with built-in `LocalRagStoreConnector` (`sample-xakugraph-rag-docs` 5-document knowledge base + isolated `data/cache/rag/` chunking sandboxes) and lazy optional `ChromaReadOnlyConnector` / `QdrantReadOnlyConnector`.
+- RAG REST API (`/api/rag/*`): connector discovery, local & external read-only collection inspection, local sliding-window chunk sandbox CRUD, retrieval playground search (`cosine_similarity`, `euclidean_distance`, `dot_product`, metadata filtering), and side-by-side strategy comparison (`overlap_count`, `jaccard_overlap`, rank deltas).
+- Interactive React RAG Visualization module (`RagExplorer`, `useRagExplorer`, `RagCollectionBar`, `RagSandboxBuilder`, `RagDocumentsPanel`, `RagPlaygroundPanel`, `RagComparePanel`) with chunk/vector inspection, score ranking charts, and side-by-side comparison tables.
+- ADR-0006 and RAG API documentation (`docs/api/rag.md`).
+
 ## [0.4.0] - Phase 4 Vector & Similarity Explorer
 
 ### Added

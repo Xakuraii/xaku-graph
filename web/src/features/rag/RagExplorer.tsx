@@ -3,7 +3,9 @@ import { AlertCircle, FileSearch, GitCompare, Info, RefreshCw, Search } from 'lu
 import { StatusBadge } from '../../components/StatusBadge';
 import { RagTabId, useRagExplorer } from '../../hooks/useRagExplorer';
 import { RagCollectionBar } from './components/RagCollectionBar';
+import { RagComparePanel } from './components/RagComparePanel';
 import { RagDocumentsPanel } from './components/RagDocumentsPanel';
+import { RagPlaygroundPanel } from './components/RagPlaygroundPanel';
 import { RagSandboxBuilder } from './components/RagSandboxBuilder';
 
 interface RagExplorerProps {
@@ -20,7 +22,7 @@ const TABS: {
   { id: 'compare', label: 'Compare Retrieval', icon: GitCompare },
 ];
 
-export const RagExplorer: React.FC<RagExplorerProps> = () => {
+export const RagExplorer: React.FC<RagExplorerProps> = ({ isDark = true }) => {
   const [showSandboxBuilder, setShowSandboxBuilder] = useState(false);
 
   const {
@@ -35,14 +37,33 @@ export const RagExplorer: React.FC<RagExplorerProps> = () => {
     setSelectedDocId,
     chunkSearch,
     setChunkSearch,
+    query,
+    setQuery,
+    metric,
+    setMetric,
+    topK,
+    setTopK,
+    filterKey,
+    setFilterKey,
+    filterValue,
+    setFilterValue,
+    searchResult,
+    strategyA,
+    setStrategyA,
+    strategyB,
+    setStrategyB,
+    compareResult,
     loading,
     loadingInspect,
+    loadingSearch,
     creating,
     error,
     selectCollection,
     connectExternal,
     createSandbox,
     deleteSandbox,
+    runSearch,
+    runComparison,
     refresh,
   } = useRagExplorer();
 
@@ -58,7 +79,7 @@ export const RagExplorer: React.FC<RagExplorerProps> = () => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               RAG Visualization & Inspection
             </h1>
-            <StatusBadge status="in_development" label="Phase 5 Active" />
+            <StatusBadge status="live" label="Phase 5 Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Inspect source documents, chunk boundaries, metadata, embedding vectors, and debug
@@ -156,10 +177,40 @@ export const RagExplorer: React.FC<RagExplorerProps> = () => {
         />
       )}
 
-      {(activeTab === 'playground' || activeTab === 'compare') && (
-        <div className="bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-          Retrieval playground & side-by-side comparison panels loading in Stage 4.
-        </div>
+      {activeTab === 'playground' && (
+        <RagPlaygroundPanel
+          query={query}
+          metric={metric}
+          topK={topK}
+          metadataKeys={activeCollection?.metadata_keys ?? []}
+          filterKey={filterKey}
+          filterValue={filterValue}
+          searchResult={searchResult}
+          loading={loadingSearch}
+          isDark={isDark}
+          onChangeQuery={setQuery}
+          onChangeMetric={setMetric}
+          onChangeTopK={setTopK}
+          onChangeFilterKey={setFilterKey}
+          onChangeFilterValue={setFilterValue}
+          onSearch={runSearch}
+        />
+      )}
+
+      {activeTab === 'compare' && (
+        <RagComparePanel
+          query={query}
+          collections={collections}
+          strategyA={strategyA}
+          strategyB={strategyB}
+          compareResult={compareResult}
+          loading={loadingSearch}
+          isDark={isDark}
+          onChangeQuery={setQuery}
+          onChangeStrategyA={setStrategyA}
+          onChangeStrategyB={setStrategyB}
+          onCompare={runComparison}
+        />
       )}
     </div>
   );
