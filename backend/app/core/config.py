@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     PROCESSED_DIR: Path = DATA_DIR / "processed"
     CACHE_DIR: Path = DATA_DIR / "cache"
     EMBEDDING_CACHE_DIR: Path = CACHE_DIR / "embeddings"
+    RAG_CACHE_DIR: Path = CACHE_DIR / "rag"
     SAMPLES_DIR: Path = DATA_DIR / "samples"
     SQLITE_DB_PATH: Path = DATA_DIR / "xakugraph.db"
 
@@ -61,6 +62,7 @@ class Settings(BaseSettings):
             self.PROCESSED_DIR,
             self.CACHE_DIR,
             self.EMBEDDING_CACHE_DIR,
+            self.RAG_CACHE_DIR,
         ):
             directory.mkdir(parents=True, exist_ok=True)
 
