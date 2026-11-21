@@ -242,7 +242,7 @@ export const VectorSpacePanel: React.FC<VectorSpacePanelProps> = ({
               layout={
                 matrixView === 'surface3d'
                   ? {
-                      margin: { l: 0, r: 0, t: 16, b: 0 },
+                      margin: { l: 12, r: 12, t: 20, b: 12 },
                       scene: {
                         xaxis: { title: { text: 'Vector A' } },
                         yaxis: { title: { text: 'Vector B' } },
@@ -309,7 +309,7 @@ export const VectorSpacePanel: React.FC<VectorSpacePanelProps> = ({
               layout={
                 spaceDim === '3d' && canSpace3d
                   ? {
-                      margin: { l: 0, r: 0, t: 16, b: 0 },
+                      margin: { l: 12, r: 12, t: 20, b: 12 },
                       scene: {
                         xaxis: { title: { text: 'd0' } },
                         yaxis: { title: { text: 'd1' } },

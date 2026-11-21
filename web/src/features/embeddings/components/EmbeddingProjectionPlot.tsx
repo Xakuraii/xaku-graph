@@ -185,14 +185,13 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
         ]
       : [];
 
-  const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.18)';
   const layout: Partial<Layout> = is3D
     ? {
-        margin: { l: 0, r: 0, t: 20, b: 0 },
+        margin: { l: 12, r: 12, t: 24, b: 12 },
         scene: {
-          xaxis: { title: { text: 'Dim 1' }, gridcolor: gridColor },
-          yaxis: { title: { text: 'Dim 2' }, gridcolor: gridColor },
-          zaxis: { title: { text: 'Dim 3' }, gridcolor: gridColor },
+          xaxis: { title: { text: 'Dim 1' } },
+          yaxis: { title: { text: 'Dim 2' } },
+          zaxis: { title: { text: 'Dim 3' } },
         },
       }
     : {

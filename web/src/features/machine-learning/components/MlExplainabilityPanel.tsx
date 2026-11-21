@@ -203,7 +203,7 @@ export const MlExplainabilityPanel: React.FC<MlExplainabilityPanelProps> = ({ ru
             layout={
               featureView === '3d' && canFeature3d
                 ? {
-                    margin: { l: 0, r: 0, t: 16, b: 0 },
+                    margin: { l: 12, r: 12, t: 20, b: 12 },
                     scene: {
                       xaxis: { title: { text: top3Features[0] } },
                       yaxis: { title: { text: top3Features[1] } },

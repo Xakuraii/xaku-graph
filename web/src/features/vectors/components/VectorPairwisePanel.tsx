@@ -356,7 +356,7 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
                 layout={
                   geomMode === '3d' && can3D
                     ? {
-                        margin: { l: 0, r: 0, t: 10, b: 0 },
+                        margin: { l: 12, r: 12, t: 16, b: 12 },
                         scene: {
                           xaxis: { title: { text: 'd0' }, range: [-1, 1] },
                           yaxis: { title: { text: 'd1' }, range: [-1, 1] },

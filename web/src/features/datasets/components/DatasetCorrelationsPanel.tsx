@@ -300,7 +300,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
             layout={
               matrixMode === 'surface3d'
                 ? {
-                    margin: { l: 0, r: 0, t: 16, b: 0 },
+                    margin: { l: 12, r: 12, t: 20, b: 12 },
                     scene: {
                       xaxis: { title: { text: 'Feature A' } },
                       yaxis: { title: { text: 'Feature B' } },
@@ -447,7 +447,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
             layout={
               scatterDim === '3d'
                 ? {
-                    margin: { l: 0, r: 0, t: 16, b: 0 },
+                    margin: { l: 12, r: 12, t: 20, b: 12 },
                     scene: {
                       xaxis: { title: { text: xCol } },
                       yaxis: { title: { text: yCol } },

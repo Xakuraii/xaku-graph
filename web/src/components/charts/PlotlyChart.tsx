@@ -29,7 +29,11 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     if (!el) return;
 
     const textColor = isDark ? '#f1f5f9' : '#1e293b';
-    const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.18)';
+    const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.22)';
+    const sceneGridColor = isDark ? '#475569' : '#cbd5e1';
+    const sceneLineColor = isDark ? '#64748b' : '#94a3b8';
+    const sceneZeroColor = isDark ? '#64748b' : '#94a3b8';
+    const sceneWallBg = isDark ? 'rgba(15, 23, 42, 0.25)' : 'rgba(241, 245, 249, 0.65)';
     const hoverBg = isDark ? '#0f172a' : '#ffffff';
     const hoverBorder = isDark ? '#334155' : '#cbd5e1';
 
@@ -40,6 +44,20 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
       data.some((trace) => trace.type === 'scatter3d' || trace.type === 'surface');
     const hasPolar =
       Boolean(polar) || data.some((trace) => trace.type === 'scatterpolar');
+
+    const sceneAxisBase = {
+      showgrid: true,
+      gridcolor: sceneGridColor,
+      gridwidth: 1,
+      showline: true,
+      linecolor: sceneLineColor,
+      zeroline: true,
+      zerolinecolor: sceneZeroColor,
+      showbackground: true,
+      backgroundcolor: sceneWallBg,
+      tickfont: { color: textColor },
+      titlefont: { color: textColor },
+    };
 
     const mergedLayout: Partial<Layout> = {
       autosize: true,
@@ -56,7 +74,9 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
         size: 11,
       },
       ...restLayout,
-      margin: { l: 48, r: 24, t: 36, b: 44, ...margin },
+      margin: has3D
+        ? { l: 12, r: 12, t: 24, b: 12, ...margin }
+        : { l: 48, r: 24, t: 36, b: 44, ...margin },
       xaxis: {
         gridcolor: gridColor,
         zerolinecolor: gridColor,
@@ -75,21 +95,15 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
               bgcolor: 'rgba(0,0,0,0)',
               ...scene,
               xaxis: {
-                gridcolor: gridColor,
-                zerolinecolor: gridColor,
-                backgroundcolor: 'rgba(0,0,0,0)',
+                ...sceneAxisBase,
                 ...scene?.xaxis,
               },
               yaxis: {
-                gridcolor: gridColor,
-                zerolinecolor: gridColor,
-                backgroundcolor: 'rgba(0,0,0,0)',
+                ...sceneAxisBase,
                 ...scene?.yaxis,
               },
               zaxis: {
-                gridcolor: gridColor,
-                zerolinecolor: gridColor,
-                backgroundcolor: 'rgba(0,0,0,0)',
+                ...sceneAxisBase,
                 ...scene?.zaxis,
               },
             },

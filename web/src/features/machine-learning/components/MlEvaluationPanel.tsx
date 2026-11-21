@@ -186,7 +186,7 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
               layout={
                 cmView === 'surface3d'
                   ? {
-                      margin: { l: 0, r: 0, t: 16, b: 0 },
+                      margin: { l: 12, r: 12, t: 20, b: 12 },
                       scene: {
                         xaxis: { title: { text: 'Predicted' } },
                         yaxis: { title: { text: 'Actual' } },
@@ -413,7 +413,7 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
               layout={
                 regView === '3d'
                   ? {
-                      margin: { l: 0, r: 0, t: 16, b: 0 },
+                      margin: { l: 12, r: 12, t: 20, b: 12 },
                       scene: {
                         xaxis: { title: { text: 'Actual' } },
                         yaxis: { title: { text: 'Predicted' } },
