@@ -1,6 +1,6 @@
 [project]
 name = "xakugraph-backend"
-version = "0.1.0"
+version = "1.0.0"
 description = "Backend processing engine for XakuGraph Local-First Data & AI Studio"
 authors = [{ name = "XakuGraph Contributors" }]
 readme = "README.md"

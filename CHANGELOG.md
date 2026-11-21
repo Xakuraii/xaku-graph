@@ -2,6 +2,13 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [1.0.0] - Stable Release
+
+### Changed
+- Bumped workspace version to `1.0.0` across `backend/`, `web/`, `crates/xakugraph-core/`, `desktop/src-tauri/`, and `Header` UI badges.
+- Configured the Tauri desktop shell window to launch maximized by default (`maximized: true` in `desktop/src-tauri/tauri.conf.json`).
+- Updated `scripts/dev.ps1` and `scripts/dev.sh` to launch FastAPI, Vite Web Studio, and the existing debug desktop executable directly without rebuilding on every start.
+
 ## [0.7.0] - Phase 7 Desktop Application (Tauri 2)
 
 ### Added

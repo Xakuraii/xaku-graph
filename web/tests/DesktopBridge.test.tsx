@@ -47,8 +47,8 @@ describe('desktopBridge & dynamic API base', () => {
     const invokeMock = vi
       .fn()
       .mockResolvedValueOnce({
-        core_version: '0.1.0',
-        app_version: '0.1.0',
+        core_version: '1.0.0',
+        app_version: '1.0.0',
         platform: 'windows',
         backend_url: 'http://127.0.0.1:8000',
         backend_reachable: true,
@@ -56,8 +56,8 @@ describe('desktopBridge & dynamic API base', () => {
         backend_dir: 'D:\\Project\\backend',
       })
       .mockResolvedValueOnce({
-        core_version: '0.1.0',
-        app_version: '0.1.0',
+        core_version: '1.0.0',
+        app_version: '1.0.0',
         platform: 'windows',
         backend_url: 'http://127.0.0.1:8000',
         backend_reachable: true,
@@ -104,7 +104,7 @@ describe('desktopBridge & dynamic API base', () => {
       json: async () => ({
         status: 'healthy',
         app: 'XakuGraph',
-        version: '0.1.0',
+        version: '1.0.0',
         rust_core_active: true,
       }),
     });

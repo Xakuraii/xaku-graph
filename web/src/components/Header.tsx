@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
               XakuGraph
             </span>
             <span className="text-[11px] sm:text-xs px-1.5 py-0.5 rounded bg-brand-500/15 dark:bg-brand-500/20 text-brand-700 dark:text-brand-400 font-mono shrink-0">
-              v0.1.0
+              v{health?.version ?? '1.0.0'}
             </span>
           </div>
           <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 truncate">
@@ -102,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Architecture Crate indicator */}
         <div className="hidden xl:flex items-center space-x-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/50 px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-800">
           <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-          <span>xakugraph-core v0.1.0</span>
+          <span>xakugraph-core v1.0.0</span>
         </div>
 
         <ThemeToggle isDark={isDark} onToggle={onThemeChange} />
