@@ -28,12 +28,12 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     const el = containerRef.current;
     if (!el) return;
 
-    const textColor = isDark ? '#f1f5f9' : '#1e293b';
-    const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.22)';
-    const sceneGridColor = isDark ? '#475569' : '#cbd5e1';
-    const sceneLineColor = isDark ? '#64748b' : '#94a3b8';
-    const sceneZeroColor = isDark ? '#64748b' : '#94a3b8';
-    const sceneWallBg = isDark ? 'rgba(15, 23, 42, 0.25)' : 'rgba(241, 245, 249, 0.65)';
+    const textColor = isDark ? '#f1f5f9' : '#0f172a';
+    const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.28)';
+    const sceneGridColor = isDark ? '#475569' : '#94a3b8';
+    const sceneLineColor = isDark ? '#64748b' : '#475569';
+    const sceneZeroColor = isDark ? '#64748b' : '#475569';
+    const sceneWallBg = isDark ? 'rgba(15, 23, 42, 0.25)' : 'rgba(226, 232, 240, 0.55)';
     const hoverBg = isDark ? '#0f172a' : '#ffffff';
     const hoverBorder = isDark ? '#334155' : '#cbd5e1';
 

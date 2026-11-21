@@ -107,7 +107,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   return (
     <div className="flex flex-1 min-h-[calc(100vh-4rem)] relative">
       {/* Desktop Sidebar Navigation */}
-      <aside className="hidden md:flex w-64 border-r border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/40 flex-col p-4 shrink-0">
+      <aside className="hidden md:flex sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto self-start w-64 border-r border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/40 flex-col p-4 shrink-0">
         <div>
           <p className="px-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
             Studio Modules
