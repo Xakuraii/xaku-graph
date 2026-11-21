@@ -27,6 +27,10 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
         z: zValues,
         colorscale: 'Viridis',
         showscale: true,
+        text: zValues.map((row) =>
+          row.map((v) => (normalizedCm ? `${v}%` : String(v)))
+        ) as unknown as string[],
+        texttemplate: '%{text}',
         hovertemplate: normalizedCm
           ? 'Actual: %{y}<br>Predicted: %{x}<br>Rate: %{z:.1f}%<extra></extra>'
           : 'Actual: %{y}<br>Predicted: %{x}<br>Count: %{z}<extra></extra>',

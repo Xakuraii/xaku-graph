@@ -60,6 +60,7 @@ export const RagExplorer: React.FC<RagExplorerProps> = ({ isDark = true }) => {
     error,
     selectCollection,
     connectExternal,
+    discoverExternal,
     createSandbox,
     deleteSandbox,
     runSearch,
@@ -79,7 +80,7 @@ export const RagExplorer: React.FC<RagExplorerProps> = ({ isDark = true }) => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               RAG Visualization & Inspection
             </h1>
-            <StatusBadge status="live" label="Phase 5 Active" />
+            <StatusBadge status="live" label="Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Inspect source documents, chunk boundaries, metadata, embedding vectors, and debug
@@ -108,6 +109,7 @@ export const RagExplorer: React.FC<RagExplorerProps> = ({ isDark = true }) => {
         onDeleteSandbox={deleteSandbox}
         onToggleSandboxBuilder={() => setShowSandboxBuilder((prev) => !prev)}
         onConnectExternal={connectExternal}
+        onDiscoverExternal={discoverExternal}
       />
 
       {showSandboxBuilder && (

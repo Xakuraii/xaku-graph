@@ -100,7 +100,7 @@ export const MlExplainabilityPanel: React.FC<MlExplainabilityPanelProps> = ({ ru
             className="w-full h-72"
             layout={{
               barmode: 'group',
-              margin: { l: 140, r: 24, t: 24, b: 40 },
+              margin: { l: 90, r: 24, t: 24, b: 40 },
               xaxis: { title: { text: 'Relative Importance Score' } },
               legend: { orientation: 'h', y: 1.12 },
             }}

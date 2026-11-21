@@ -133,4 +133,16 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
       expect(screen.getByText('PCA 2D Visual Projection')).toBeInTheDocument();
     });
   });
+
+  it('supports JSON array vector inputs', async () => {
+    render(<VectorExplorer isDark={true} />);
+    const textareas = screen.getAllByPlaceholderText(/e\.g\./i);
+    fireEvent.change(textareas[0], { target: { value: '[1, 2, 3, 4]' } });
+    fireEvent.change(textareas[1], { target: { value: '[2, 3, 4, 5]' } });
+
+    fireEvent.click(screen.getByText('Calculate Similarity & Distance'));
+    await waitFor(() => {
+      expect(screen.getByText('0.99388')).toBeInTheDocument();
+    });
+  });
 });

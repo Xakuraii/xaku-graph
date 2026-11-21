@@ -50,7 +50,10 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
         {
           type: 'bar',
           orientation: 'h',
-          y: reversedResults.map((r) => `${r.doc_title} (#${r.chunk_index})`),
+          y: reversedResults.map((r) => {
+            const label = `${r.doc_title} (#${r.chunk_index})`;
+            return label.length > 28 ? `${label.slice(0, 26)}…` : label;
+          }),
           x: reversedResults.map((r) => r.score),
           text: reversedResults.map((r) => r.score.toFixed(4)),
           textposition: 'auto',
@@ -192,7 +195,7 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
                 testId="rag-retrieval-chart"
                 className="w-full h-72"
                 layout={{
-                  margin: { l: 210, r: 24, t: 16, b: 40 },
+                  margin: { l: 110, r: 24, t: 16, b: 40 },
                   xaxis: { title: { text: searchResult.metric } },
                 }}
               />

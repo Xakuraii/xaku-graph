@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiClient } from '../services/apiClient';
 import {
   DatasetSummary,
@@ -35,6 +35,9 @@ export function useMlExplorer() {
     }
   }, []);
 
+  const activeRunIdRef = useRef<string>(activeRunId);
+  activeRunIdRef.current = activeRunId;
+
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -45,8 +48,9 @@ export function useMlExplorer() {
       ]);
       setRuns(runsRes.runs);
       setDatasets(dsRes.datasets);
-      const targetId = runsRes.runs.some((r) => r.id === activeRunId)
-        ? activeRunId
+      const preferredId = activeRunIdRef.current;
+      const targetId = runsRes.runs.some((r) => r.id === preferredId)
+        ? preferredId
         : (runsRes.runs[0]?.id ?? '');
       if (targetId) {
         setActiveRunId(targetId);
@@ -57,7 +61,7 @@ export function useMlExplorer() {
     } finally {
       setLoading(false);
     }
-  }, [activeRunId, loadRunDetail]);
+  }, [loadRunDetail]);
 
   useEffect(() => {
     void refresh();

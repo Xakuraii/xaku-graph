@@ -45,6 +45,15 @@ const SAMPLE_IMPORT_JSON = JSON.stringify(
   2
 );
 
+const SAMPLE_IMPORT_CSV = [
+  'actual,predicted,confidence',
+  'setosa,setosa,0.98',
+  'versicolor,versicolor,0.91',
+  'virginica,versicolor,0.58',
+  'virginica,virginica,0.94',
+  'setosa,setosa,0.99',
+].join('\n');
+
 export const MlRunBuilder: React.FC<MlRunBuilderProps> = ({
   mode,
   datasets,
@@ -63,6 +72,9 @@ export const MlRunBuilder: React.FC<MlRunBuilderProps> = ({
   const [testSize, setTestSize] = useState<number>(0.25);
   const [nSteps, setNSteps] = useState<number>(10);
 
+  const [importFormat, setImportFormat] = useState<'json' | 'csv'>('json');
+  const [importName, setImportName] = useState('Imported CSV Evaluation Run');
+  const [importTask, setImportTask] = useState<MlTaskType>('classification');
   const [importJson, setImportJson] = useState<string>(SAMPLE_IMPORT_JSON);
   const [parseError, setParseError] = useState<string | null>(null);
 
@@ -117,11 +129,50 @@ export const MlRunBuilder: React.FC<MlRunBuilderProps> = ({
     e.preventDefault();
     setParseError(null);
     try {
-      const parsed = JSON.parse(importJson) as MlImportRequest;
-      const created = await onImport(parsed);
+      let payload: MlImportRequest;
+      if (importFormat === 'csv') {
+        const lines = importJson
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
+        if (lines.length < 3) {
+          throw new Error('CSV needs a header row (actual,predicted) and at least 2 data rows.');
+        }
+        const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+        const actualIdx = headers.indexOf('actual');
+        const predIdx = headers.indexOf('predicted');
+        const confIdx = headers.indexOf('confidence');
+        if (actualIdx === -1 || predIdx === -1) {
+          throw new Error('CSV header must include "actual" and "predicted" columns.');
+        }
+        const predictions = lines.slice(1).map((line) => {
+          const cells = line.split(',').map((c) => c.trim());
+          const rawActual = cells[actualIdx] ?? '';
+          const rawPred = cells[predIdx] ?? '';
+          const conf =
+            confIdx !== -1 && cells[confIdx] !== undefined && cells[confIdx] !== ''
+              ? Number(cells[confIdx])
+              : undefined;
+          return {
+            actual: importTask === 'regression' ? Number(rawActual) : rawActual,
+            predicted: importTask === 'regression' ? Number(rawPred) : rawPred,
+            confidence: conf !== undefined && !Number.isNaN(conf) ? conf : undefined,
+          };
+        });
+        payload = {
+          name: importName.trim() || 'Imported CSV Evaluation Run',
+          task_type: importTask,
+          algorithm: 'imported_csv',
+          target_column: 'target',
+          predictions,
+        };
+      } else {
+        payload = JSON.parse(importJson) as MlImportRequest;
+      }
+      const created = await onImport(payload);
       if (created) onClose();
     } catch (err) {
-      setParseError(err instanceof Error ? err.message : 'Invalid JSON payload');
+      setParseError(err instanceof Error ? err.message : 'Invalid evaluation payload');
     }
   };
 
@@ -334,14 +385,74 @@ export const MlRunBuilder: React.FC<MlRunBuilderProps> = ({
         </form>
       ) : (
         <form onSubmit={(e) => void handleImportSubmit(e)} className="space-y-3 text-xs">
-          <p className="text-slate-600 dark:text-slate-400">
-            Paste evaluation predictions & optional training curves JSON from PyTorch, XGBoost,
-            Keras, or custom pipelines. XakuGraph computes all confusion matrices, F1, R², and
-            residual metrics locally.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-slate-600 dark:text-slate-400">
+              Paste evaluation predictions & optional training curves as JSON or CSV (
+              <code>actual,predicted,confidence</code>). XakuGraph computes confusion matrices, F1,
+              R², and residuals locally.
+            </p>
+            <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950">
+              <button
+                type="button"
+                onClick={() => {
+                  setImportFormat('json');
+                  setImportJson(SAMPLE_IMPORT_JSON);
+                  setParseError(null);
+                }}
+                className={`px-2.5 py-1 rounded-md ${
+                  importFormat === 'json'
+                    ? 'bg-brand-600 text-slate-950 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                JSON
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setImportFormat('csv');
+                  setImportJson(SAMPLE_IMPORT_CSV);
+                  setParseError(null);
+                }}
+                className={`px-2.5 py-1 rounded-md ${
+                  importFormat === 'csv'
+                    ? 'bg-brand-600 text-slate-950 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                CSV
+              </button>
+            </div>
+          </div>
+
+          {importFormat === 'csv' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1">Run Name</label>
+                <input
+                  type="text"
+                  value={importName}
+                  onChange={(e) => setImportName(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 text-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1">Task Type</label>
+                <select
+                  aria-label="Imported CSV task type"
+                  value={importTask}
+                  onChange={(e) => setImportTask(e.target.value as MlTaskType)}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 text-slate-900 dark:text-white"
+                >
+                  <option value="classification">Classification</option>
+                  <option value="regression">Regression</option>
+                </select>
+              </div>
+            </div>
+          )}
 
           <textarea
-            aria-label="Evaluation JSON payload"
+            aria-label="Evaluation JSON or CSV payload"
             rows={10}
             value={importJson}
             onChange={(e) => setImportJson(e.target.value)}

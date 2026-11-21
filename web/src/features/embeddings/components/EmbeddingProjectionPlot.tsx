@@ -142,14 +142,20 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
         </div>
 
         <div className={loading ? 'opacity-60 transition-opacity' : ''}>
-          <PlotlyChart
-            data={traces}
-            layout={layout}
-            isDark={isDark}
-            className="w-full h-[26rem]"
-            testId="embedding-plot"
-            onPointClick={onSelectPoint}
-          />
+          {projection.points.length === 0 ? (
+            <div className="h-[26rem] flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 p-6 text-center">
+              No points matched your active metadata filter. Clear or adjust the filter value above.
+            </div>
+          ) : (
+            <PlotlyChart
+              data={traces}
+              layout={layout}
+              isDark={isDark}
+              className="w-full h-[26rem]"
+              testId="embedding-plot"
+              onPointClick={onSelectPoint}
+            />
+          )}
         </div>
 
         {/* Cluster Summary Badges */}

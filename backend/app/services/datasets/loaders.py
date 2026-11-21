@@ -1,3 +1,4 @@
+import json
 import re
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -77,6 +78,28 @@ class JsonLoader(DatasetLoader):
 
     def load(self, file_path: Path) -> pl.DataFrame:
         try:
+            raw_text = file_path.read_text(encoding="utf-8")
+            parsed = json.loads(raw_text)
+
+            if isinstance(parsed, dict):
+                # Unwrap common {"data": [...]} or {"records": [...]} envelopes
+                for wrapper_key in ("data", "records", "rows", "items"):
+                    if isinstance(parsed.get(wrapper_key), list):
+                        parsed = parsed[wrapper_key]
+                        break
+
+            if isinstance(parsed, dict) and parsed:
+                values = list(parsed.values())
+                if all(isinstance(v, list) for v in values):
+                    lengths = {len(v) for v in values}
+                    if len(lengths) == 1:
+                        return pl.DataFrame(parsed)
+
+            if isinstance(parsed, list):
+                if len(parsed) == 0:
+                    raise ValueError("JSON array contains zero records.")
+                return pl.DataFrame(parsed, infer_schema_length=None)
+
             return pl.read_json(file_path)
         except Exception as err:
             raise ValueError(f"Failed to parse JSON file: {err}") from err

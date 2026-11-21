@@ -23,6 +23,7 @@ function getInitialTheme(): boolean {
 
 export const App: React.FC = () => {
   const [activeModule, setActiveModule] = useState<NavModuleId>('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true);
   const [isDark, setIsDark] = useState<boolean>(getInitialTheme);
@@ -98,8 +99,15 @@ export const App: React.FC = () => {
         loading={loadingHealth}
         isDark={isDark}
         onThemeChange={handleThemeChange}
+        mobileMenuOpen={mobileMenuOpen}
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
       />
-      <AppLayout activeModule={activeModule} onSelectModule={setActiveModule}>
+      <AppLayout
+        activeModule={activeModule}
+        onSelectModule={setActiveModule}
+        mobileMenuOpen={mobileMenuOpen}
+        onCloseMobileMenu={() => setMobileMenuOpen(false)}
+      >
         {renderModuleContent()}
       </AppLayout>
     </div>

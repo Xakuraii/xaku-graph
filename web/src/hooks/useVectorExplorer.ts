@@ -20,8 +20,34 @@ const DEFAULT_CANDIDATE_LINES = [
 ].join('\n');
 
 export function parseVectorString(str: string): number[] {
-  const parts = str
-    .split(',')
+  const trimmed = str.trim();
+  if (!trimmed) {
+    throw new Error('Vector cannot be empty.');
+  }
+
+  if (trimmed.startsWith('[')) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch (err) {
+      throw new Error(
+        `Invalid JSON vector array: ${err instanceof Error ? err.message : 'parse error'}`
+      );
+    }
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error('JSON vector must be a non-empty array of numbers.');
+    }
+    return parsed.map((item) => {
+      const val = Number(item);
+      if (typeof item === 'boolean' || Number.isNaN(val) || !Number.isFinite(val)) {
+        throw new Error(`Invalid vector component: "${String(item)}"`);
+      }
+      return val;
+    });
+  }
+
+  const parts = trimmed
+    .split(/[,\s]+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   if (parts.length === 0) {
@@ -37,7 +63,60 @@ export function parseVectorString(str: string): number[] {
 }
 
 export function parseNamedVectors(text: string): NamedVectorInput[] {
-  const lines = text
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error('Provide at least one candidate vector.');
+  }
+
+  if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch (err) {
+      throw new Error(
+        `Invalid JSON candidate vectors: ${err instanceof Error ? err.message : 'parse error'}`
+      );
+    }
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error('JSON candidates must be a non-empty array.');
+    }
+    return parsed.map((item, idx) => {
+      if (Array.isArray(item)) {
+        return {
+          id: `vec-${idx + 1}`,
+          label: `Vec ${idx + 1}`,
+          values: item.map((v) => {
+            const num = Number(v);
+            if (Number.isNaN(num) || !Number.isFinite(num)) {
+              throw new Error(`Invalid vector value at item ${idx + 1}`);
+            }
+            return num;
+          }),
+        };
+      }
+      if (item && typeof item === 'object') {
+        const obj = item as Record<string, unknown>;
+        const rawVals = obj.values ?? obj.vector ?? obj.embedding;
+        if (!Array.isArray(rawVals) || rawVals.length === 0) {
+          throw new Error(`Item ${idx + 1} is missing a numeric "values" array.`);
+        }
+        return {
+          id: String(obj.id ?? `vec-${idx + 1}`),
+          label: String(obj.label ?? obj.name ?? `Vec ${idx + 1}`),
+          values: rawVals.map((v) => {
+            const num = Number(v);
+            if (Number.isNaN(num) || !Number.isFinite(num)) {
+              throw new Error(`Invalid number in vector "${String(obj.label ?? idx + 1)}"`);
+            }
+            return num;
+          }),
+        };
+      }
+      throw new Error(`Unsupported JSON candidate item at index ${idx}.`);
+    });
+  }
+
+  const lines = trimmed
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
@@ -83,21 +162,10 @@ export function useVectorExplorer() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPairwisePreset = useCallback((a: number[], b: number[]) => {
-    setVecAStr(a.join(', '));
-    setVecBStr(b.join(', '));
-    setPairwiseResult(null);
-    setInspectA(null);
-    setInspectB(null);
-    setError(null);
-  }, []);
-
-  const calculatePairwise = useCallback(async () => {
+  const computePairwiseVectors = useCallback(async (a: number[], b: number[]) => {
     setError(null);
     setLoading(true);
     try {
-      const a = parseVectorString(vecAStr);
-      const b = parseVectorString(vecBStr);
       if (a.length !== b.length) {
         throw new Error(
           `Dimension mismatch: Vector A has ${a.length} dimensions, while Vector B has ${b.length}.`
@@ -116,7 +184,26 @@ export function useVectorExplorer() {
     } finally {
       setLoading(false);
     }
-  }, [vecAStr, vecBStr]);
+  }, []);
+
+  const loadPairwisePreset = useCallback(
+    (a: number[], b: number[]) => {
+      setVecAStr(a.join(', '));
+      setVecBStr(b.join(', '));
+      void computePairwiseVectors(a, b);
+    },
+    [computePairwiseVectors]
+  );
+
+  const calculatePairwise = useCallback(async () => {
+    try {
+      const a = parseVectorString(vecAStr);
+      const b = parseVectorString(vecBStr);
+      await computePairwiseVectors(a, b);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Calculation error');
+    }
+  }, [vecAStr, vecBStr, computePairwiseVectors]);
 
   const runNeighborSearch = useCallback(async () => {
     setError(null);

@@ -51,7 +51,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
         <div className="max-w-2xl space-y-4">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-700 dark:text-brand-400 text-xs font-medium">
             <Zap className="w-3.5 h-3.5" />
-            <span>Phase 6 ML Visualization · All 5 Studio Modules Active</span>
+            <span>Local-First AI & Data Studio</span>
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
@@ -158,7 +158,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Database className="w-4 h-4" />
               </div>
-              <StatusBadge status="live" label="Phase 2 Active" />
+              <StatusBadge status="live" label="Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
@@ -180,7 +180,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Layers className="w-4 h-4" />
               </div>
-              <StatusBadge status="live" label="Phase 3 Active" />
+              <StatusBadge status="live" label="Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
@@ -202,7 +202,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Binary className="w-4 h-4" />
               </div>
-              <StatusBadge status="live" label="Phase 4 Active" />
+              <StatusBadge status="live" label="Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
@@ -224,7 +224,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <GitGraph className="w-4 h-4" />
               </div>
-              <StatusBadge status="live" label="Phase 5 Active" />
+              <StatusBadge status="live" label="Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
@@ -246,7 +246,7 @@ export const StudioOverview: React.FC<StudioOverviewProps> = ({
               <div className="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Cpu className="w-4 h-4" />
               </div>
-              <StatusBadge status="live" label="Phase 6 Active" />
+              <StatusBadge status="live" label="Active" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">

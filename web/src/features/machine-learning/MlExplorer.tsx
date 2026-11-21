@@ -53,7 +53,7 @@ export const MlExplorer: React.FC<MlExplorerProps> = ({ isDark = true }) => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               ML Model & Evaluation Visualization
             </h1>
-            <StatusBadge status="live" label="Phase 6 Active" />
+            <StatusBadge status="live" label="Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Inspect training curves, confusion matrices, regression residuals, feature importance,
@@ -103,7 +103,7 @@ export const MlExplorer: React.FC<MlExplorerProps> = ({ isDark = true }) => {
       )}
 
       {/* Sub-navigation Tabs */}
-      <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+      <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -112,7 +112,7 @@ export const MlExplorer: React.FC<MlExplorerProps> = ({ isDark = true }) => {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+              className={`inline-flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
                 active
                   ? 'bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-500/30'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'

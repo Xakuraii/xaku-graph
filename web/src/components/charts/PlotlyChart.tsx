@@ -31,6 +31,8 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     const textColor = isDark ? '#cbd5e1' : '#334155';
     const gridColor = isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(100, 116, 139, 0.18)';
 
+    const { xaxis, yaxis, margin, ...restLayout } = layout;
+
     const mergedLayout: Partial<Layout> = {
       autosize: true,
       paper_bgcolor: 'rgba(0,0,0,0)',
@@ -40,18 +42,20 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
         family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         size: 11,
       },
-      margin: { l: 48, r: 24, t: 36, b: 44 },
+      ...restLayout,
+      margin: { l: 48, r: 24, t: 36, b: 44, ...margin },
       xaxis: {
         gridcolor: gridColor,
         zerolinecolor: gridColor,
-        ...layout.xaxis,
+        automargin: true,
+        ...xaxis,
       },
       yaxis: {
         gridcolor: gridColor,
         zerolinecolor: gridColor,
-        ...layout.yaxis,
+        automargin: true,
+        ...yaxis,
       },
-      ...layout,
     };
 
     const mergedConfig: Partial<Config> = {

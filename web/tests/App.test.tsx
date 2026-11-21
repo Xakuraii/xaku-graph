@@ -151,4 +151,24 @@ describe('XakuGraph App Foundation', () => {
       expect(localStorage.getItem('theme')).toBe('dark');
     });
   });
+
+  it('omits sidebar platform/storage & phase status text and opens mobile hamburger menu', async () => {
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('XakuGraph')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Studio Status')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Local Parquet & SQLite/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Phase 6/i)).not.toBeInTheDocument();
+
+    const menuBtn = screen.getByRole('button', { name: /Toggle navigation menu/i });
+    fireEvent.click(menuBtn);
+    expect(screen.getByRole('dialog', { name: /Mobile navigation menu/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Close navigation menu/i }));
+    expect(
+      screen.queryByRole('dialog', { name: /Mobile navigation menu/i })
+    ).not.toBeInTheDocument();
+  });
 });

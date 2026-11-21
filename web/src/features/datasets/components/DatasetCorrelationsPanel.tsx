@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GitCompare, ScatterChart } from 'lucide-react';
 import { Data } from 'plotly.js-dist-min';
 import {
@@ -35,6 +35,9 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
   const [xCol, setXCol] = useState<string>('');
   const [yCol, setYCol] = useState<string>('');
   const [colorCol, setColorCol] = useState<string>('');
+  const initializedColsKeyRef = useRef<string>('');
+
+  const colsSignature = `${numericCols.join('|')}::${categoricalCols.join('|')}`;
 
   useEffect(() => {
     if (numericCols.length > 0) {
@@ -43,10 +46,11 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
         setYCol(numericCols.length > 1 ? numericCols[1] : numericCols[0]);
       }
     }
-    if (categoricalCols.length > 0 && colorCol === '') {
-      setColorCol(categoricalCols[0]);
+    if (initializedColsKeyRef.current !== colsSignature) {
+      initializedColsKeyRef.current = colsSignature;
+      setColorCol(categoricalCols[0] ?? '');
     }
-  }, [numericCols, categoricalCols, xCol, yCol, colorCol]);
+  }, [colsSignature, numericCols, categoricalCols, xCol, yCol]);
 
   if (loading && !correlations) {
     return (
@@ -178,7 +182,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div>
               <label className="block text-[11px] text-slate-500 mb-1">X Axis</label>
               <select

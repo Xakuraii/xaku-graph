@@ -67,23 +67,46 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'text') {
-      const lines = rawTextLines
-        .split('\n')
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
-      if (lines.length < 2) return;
+      const trimmed = rawTextLines.trim();
+      if (!trimmed) return;
 
-      const items = lines.map((line, idx) => {
-        const parts = line.split('|').map((p) => p.trim());
-        if (parts.length >= 2) {
-          return {
-            label: parts[0] || `Item ${idx + 1}`,
-            text: parts[1],
-            metadata: parts[2] ? { category: parts[2] } : {},
-          };
+      let items: { label: string; text: string; metadata: Record<string, unknown> }[] = [];
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed) as Array<Record<string, unknown> | string>;
+          items = parsed.map((entry, idx) => {
+            if (typeof entry === 'string') {
+              return { label: `Item ${idx + 1}`, text: entry, metadata: {} };
+            }
+            const label = String(entry.label ?? entry.title ?? `Item ${idx + 1}`);
+            const text = String(entry.text ?? entry.content ?? '');
+            const { label: _l, title: _t, text: _tx, content: _c, ...rest } = entry;
+            return { label, text, metadata: rest };
+          });
+        } catch {
+          return;
         }
-        return { label: `Item ${idx + 1}`, text: line, metadata: {} };
-      });
+      } else {
+        const lines = trimmed
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
+        if (lines.length < 2) return;
+
+        items = lines.map((line, idx) => {
+          const parts = line.split('|').map((p) => p.trim());
+          if (parts.length >= 2) {
+            return {
+              label: parts[0] || `Item ${idx + 1}`,
+              text: parts[1],
+              metadata: parts[2] ? { category: parts[2] } : {},
+            };
+          }
+          return { label: `Item ${idx + 1}`, text: line, metadata: {} };
+        });
+      }
+
+      if (items.length < 2) return;
 
       const res = await onCreateText({
         name: spaceName.trim() || 'Custom Text Embeddings',
@@ -218,7 +241,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
       {mode === 'text' && (
         <div>
           <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-            Items (one per line; optional <code>Label | Text | Category</code> format)
+            Items (one per line: <code>Label | Text | Category</code>, or paste JSON array{' '}
+            <code>[{`{"label": "...", "text": "..."}`}]</code>)
           </label>
           <textarea
             rows={5}

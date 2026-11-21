@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Search,
   Filter,
@@ -28,6 +28,12 @@ export const DatasetRowsTable: React.FC<DatasetRowsTableProps> = ({
   const [searchInput, setSearchInput] = useState(query.search ?? '');
   const [filterCol, setFilterCol] = useState(query.filter_col ?? '');
   const [filterValue, setFilterValue] = useState(query.filter_value ?? '');
+
+  useEffect(() => {
+    setSearchInput(query.search ?? '');
+    setFilterCol(query.filter_col ?? '');
+    setFilterValue(query.filter_value ?? '');
+  }, [query.search, query.filter_col, query.filter_value]);
 
   const offset = query.offset ?? 0;
   const limit = query.limit ?? 25;

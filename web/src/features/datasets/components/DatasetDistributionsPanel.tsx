@@ -70,20 +70,28 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
           {
             type: 'box',
             name: activeDist.column,
+            x: [activeDist.column],
             q1: [activeDist.boxplot.q1],
             median: [activeDist.boxplot.median],
             q3: [activeDist.boxplot.q3],
             lowerfence: [activeDist.boxplot.lower_fence],
             upperfence: [activeDist.boxplot.upper_fence],
-            y:
-              activeDist.boxplot.sample_outliers.length > 0
-                ? [activeDist.boxplot.sample_outliers]
-                : undefined,
             marker: { color: '#38bdf8' },
             line: { color: '#38bdf8' },
             fillcolor: 'rgba(56, 189, 248, 0.2)',
-            boxpoints: 'outliers',
           } as unknown as Data,
+          ...(activeDist.boxplot.sample_outliers.length > 0
+            ? [
+                {
+                  type: 'scatter' as const,
+                  mode: 'markers' as const,
+                  name: 'Outliers',
+                  x: activeDist.boxplot.sample_outliers.map(() => activeDist.column),
+                  y: activeDist.boxplot.sample_outliers,
+                  marker: { color: '#f43f5e', size: 7, symbol: 'circle-open' as const },
+                },
+              ]
+            : []),
         ]
       : [];
 
