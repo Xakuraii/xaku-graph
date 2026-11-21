@@ -2,6 +2,15 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [0.7.0] - Phase 7 Desktop Application (Tauri 2)
+
+### Added
+- Windows Tauri 2 backend lifecycle manager (`desktop/src-tauri/src/backend_manager.rs`) with automatic packaged FastAPI startup (`CREATE_NO_WINDOW`), port `8000` reuse detection, exit shutdown cleanup, and Tauri IPC commands (`get_core_version`, `get_desktop_runtime_info`, `ensure_backend_running`, `compute_vector_similarity_native`).
+- Backend CORS allowlist support for Tauri WebView2 origins (`http://tauri.localhost`, `https://tauri.localhost`) in `backend/app/core/config.py`.
+- Frontend `desktopBridge` (`web/src/services/desktopBridge.ts`) and dynamic `resolveApiBase()` routing in `apiClient.ts`, plus automatic backend recovery in `App.tsx`, manual `Reconnect` action in `Header.tsx`, and Vitest coverage (`DesktopBridge.test.tsx`).
+- Updated `desktop/src-tauri/tauri.conf.json`, `scripts/dev.ps1 -Desktop`, `scripts/check.ps1`, and `scripts/test.ps1` to verify both `xakugraph-core` and `xakugraph-desktop`.
+- Desktop shell architecture guide (`docs/architecture/desktop-shell.md`) and `ADR-0008`.
+
 ## [0.6.0] - Phase 6 ML Visualization
 
 ### Added
