@@ -6,7 +6,7 @@ import { DatasetExplorer } from '../features/datasets/DatasetExplorer';
 import { VectorExplorer } from '../features/vectors/VectorExplorer';
 import { EmbeddingExplorer } from '../features/embeddings/EmbeddingExplorer';
 import { RagExplorer } from '../features/rag/RagExplorer';
-import { MlPlaceholder } from '../features/machine-learning/MlPlaceholder';
+import { MlExplorer } from '../features/machine-learning/MlExplorer';
 import { apiClient } from '../services/apiClient';
 import { HealthResponse } from '../types/api';
 
@@ -80,7 +80,7 @@ export const App: React.FC = () => {
       case 'rag':
         return <RagExplorer isDark={isDark} />;
       case 'ml':
-        return <MlPlaceholder />;
+        return <MlExplorer isDark={isDark} />;
       default:
         return (
           <StudioOverview

@@ -16,6 +16,11 @@ import {
   EmbeddingSpaceListResponse,
   EmbeddingSpaceSummary,
   HealthResponse,
+  MlDeleteResponse,
+  MlImportRequest,
+  MlRunDetail,
+  MlRunListResponse,
+  MlTrainRequest,
   PointInspectionResponse,
   ProjectionRequest,
   ProjectionResponse,
@@ -273,5 +278,27 @@ export const apiClient = {
     request<RagCompareResponse>('/rag/compare', {
       method: 'POST',
       body: JSON.stringify(payload),
+    }),
+
+  listMlRuns: () => request<MlRunListResponse>('/ml/runs'),
+
+  getMlRun: (runId: string) =>
+    request<MlRunDetail>(`/ml/runs/${encodeURIComponent(runId)}`),
+
+  trainMlModel: (payload: MlTrainRequest) =>
+    request<MlRunDetail>('/ml/train', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  importMlRun: (payload: MlImportRequest) =>
+    request<MlRunDetail>('/ml/import', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  deleteMlRun: (runId: string) =>
+    request<MlDeleteResponse>(`/ml/runs/${encodeURIComponent(runId)}`, {
+      method: 'DELETE',
     }),
 };

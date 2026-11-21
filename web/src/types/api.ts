@@ -557,3 +557,138 @@ export interface PointInspectionResponse {
   neighbors: NearestNeighborItem[];
   similarity_basis: string;
 }
+
+export type MlTaskType = 'classification' | 'regression';
+export type MlAlgorithm = 'random_forest' | 'logistic_regression' | 'gradient_boosting' | 'ridge';
+export type MlRunSource = 'sample' | 'local_training' | 'imported';
+
+export interface MlTrainingPoint {
+  step: number;
+  label: string;
+  train_loss: number;
+  val_loss: number;
+  train_score?: number | null;
+  val_score?: number | null;
+}
+
+export interface MlClassMetrics {
+  label: string;
+  precision: number;
+  recall: number;
+  f1_score: number;
+  support: number;
+}
+
+export interface MlConfusionMatrixData {
+  labels: string[];
+  matrix: number[][];
+  normalized_matrix: number[][];
+}
+
+export interface MlClassificationMetrics {
+  accuracy: number;
+  precision_macro: number;
+  recall_macro: number;
+  f1_macro: number;
+  precision_weighted: number;
+  recall_weighted: number;
+  f1_weighted: number;
+  per_class: MlClassMetrics[];
+  confusion_matrix: MlConfusionMatrixData;
+}
+
+export interface MlRegressionMetrics {
+  mae: number;
+  mse: number;
+  rmse: number;
+  r2: number;
+  explained_variance: number;
+  max_error: number;
+}
+
+export interface MlFeatureImportanceItem {
+  feature: string;
+  importance: number;
+  permutation_importance?: number | null;
+  std?: number | null;
+}
+
+export interface MlPredictionRecord {
+  index: number;
+  actual: string | number;
+  predicted: string | number;
+  is_correct?: boolean | null;
+  confidence?: number | null;
+  residual?: number | null;
+  abs_error?: number | null;
+  features: Record<string, string | number | null>;
+}
+
+export interface MlRunSummary {
+  id: string;
+  name: string;
+  task_type: MlTaskType;
+  algorithm: string;
+  source: MlRunSource;
+  dataset_id?: string | null;
+  target_column: string;
+  sample_count: number;
+  train_count: number;
+  val_count: number;
+  primary_metric_name: string;
+  primary_metric_value: number;
+  is_sample: boolean;
+  created_at: string;
+}
+
+export interface MlRunDetail extends MlRunSummary {
+  feature_columns: string[];
+  hyperparameters: Record<string, unknown>;
+  training_history: MlTrainingPoint[];
+  classification?: MlClassificationMetrics | null;
+  regression?: MlRegressionMetrics | null;
+  feature_importances: MlFeatureImportanceItem[];
+  predictions: MlPredictionRecord[];
+}
+
+export interface MlRunListResponse {
+  runs: MlRunSummary[];
+  total: number;
+}
+
+export interface MlTrainRequest {
+  name?: string;
+  dataset_id: string;
+  task_type: MlTaskType;
+  target_column: string;
+  feature_columns: string[];
+  algorithm: MlAlgorithm;
+  test_size: number;
+  n_steps: number;
+  random_state?: number;
+}
+
+export interface MlImportPredictionItem {
+  actual: string | number;
+  predicted: string | number;
+  confidence?: number | null;
+  features?: Record<string, string | number | null>;
+}
+
+export interface MlImportRequest {
+  name: string;
+  task_type: MlTaskType;
+  algorithm: string;
+  target_column: string;
+  feature_columns?: string[];
+  training_history?: MlTrainingPoint[];
+  predictions: MlImportPredictionItem[];
+  feature_importances?: MlFeatureImportanceItem[];
+  hyperparameters?: Record<string, unknown>;
+}
+
+export interface MlDeleteResponse {
+  deleted: boolean;
+  run_id: string;
+  message: string;
+}
