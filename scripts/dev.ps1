@@ -1,13 +1,15 @@
 # ==============================================================================
 # XakuGraph Local Development Launcher (Windows PowerShell)
-# Starts FastAPI backend (port 8000), Vite frontend (port 5173), and Tauri
-# desktop shell concurrently. Pass -WebOnly to skip launching Tauri desktop.
+# Starts FastAPI backend (port 8000), Vite frontend (port 5173), and XakuGraph
+# Tauri desktop window concurrently without rebuilding if debug binary exists.
+# Pass -WebOnly to skip desktop, or -Rebuild to recompile the desktop binary.
 # ==============================================================================
 
 [CmdletBinding()]
 param(
     [switch]$Desktop = $false,
-    [switch]$WebOnly = $false
+    [switch]$WebOnly = $false,
+    [switch]$Rebuild = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,16 +35,15 @@ if (-not $hasNode) {
     exit 1
 }
 
-$LaunchDesktop = -not $WebOnly
-if ($Desktop) {
-    $LaunchDesktop = $true
-}
-if ($LaunchDesktop -and -not $hasCargo) {
+$DesktopDebugExe = Join-Path $ProjectRoot "target\debug\xakugraph-desktop.exe"
+$LaunchDesktop = (-not $WebOnly) -or $Desktop
+
+if ($LaunchDesktop -and -not (Test-Path $DesktopDebugExe) -and -not $hasCargo) {
     if ($Desktop) {
-        Write-Error "Rust/Cargo is required to launch the Tauri desktop shell."
+        Write-Error "Desktop executable not found and Rust/Cargo is unavailable."
         exit 1
     }
-    Write-Warning "Rust/Cargo not found in PATH; falling back to Web-only mode."
+    Write-Warning "Desktop executable and Rust/Cargo not found; falling back to Web-only mode."
     $LaunchDesktop = $false
 }
 
@@ -75,70 +76,77 @@ if (-not (Test-Path $WebModules)) {
     }
 }
 
-# 4. Start FastAPI Backend + Frontend / Desktop Shell
-Write-Host "`n[1/2] Starting FastAPI Backend on http://127.0.0.1:8000 ..." -ForegroundColor Green
-$BackendJob = Start-Process -FilePath $VenvPython -ArgumentList "-m", "uvicorn", "app.main:app", "--reload", "--host", "127.0.0.1", "--port", "8000" -WorkingDirectory $BackendDir -PassThru
-
-$FrontendJob = $null
-if ($LaunchDesktop) {
-    $DesktopDir = Join-Path $ProjectRoot "desktop"
-    Write-Host "[2/2] Starting Vite Web Studio + Tauri Desktop Shell (http://localhost:5173)..." -ForegroundColor Green
-    Write-Host "`n==========================================================" -ForegroundColor Cyan
-    Write-Host "  XakuGraph is launching:" -ForegroundColor Green
-    Write-Host "  - Desktop App:   XakuGraph Native Window (Tauri 2)" -ForegroundColor White
-    Write-Host "  - Web Studio:    http://localhost:5173" -ForegroundColor White
-    Write-Host "  - Backend API:   http://127.0.0.1:8000" -ForegroundColor White
-    Write-Host "  - OpenAPI Docs:  http://127.0.0.1:8000/docs" -ForegroundColor White
-    Write-Host "==========================================================" -ForegroundColor Cyan
-    Write-Host "Close the XakuGraph Desktop window or press [Ctrl+C] to stop.`n" -ForegroundColor Yellow
-
-    Push-Location $DesktopDir
-    try {
-        & npx.cmd --yes @tauri-apps/cli dev
-        if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-        }
-    } finally {
-        Pop-Location
-        Write-Host "`n[Stopping] Terminating XakuGraph backend server..." -ForegroundColor Yellow
-        if ($BackendJob -and -not $BackendJob.HasExited) {
-            Stop-Process -Id $BackendJob.Id -Force -ErrorAction SilentlyContinue
-        }
-        Write-Host "[Stopped] Desktop and backend development services shut down cleanly." -ForegroundColor Green
-    }
-    exit 0
+# 4. Build Desktop Debug Binary Only If Missing or Explicitly Requested
+if ($LaunchDesktop -and ($Rebuild -or -not (Test-Path $DesktopDebugExe))) {
+    Write-Host "`n[Setup] Building XakuGraph desktop debug executable (one-time)..." -ForegroundColor Yellow
+    & cargo build -p xakugraph-desktop
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Write-Host "[2/2] Starting Vite Frontend on http://localhost:5173 (Web-only mode)..." -ForegroundColor Green
+# 5. Start Local Processes
+Write-Host "`n[1/3] Starting FastAPI Backend on http://127.0.0.1:8000 ..." -ForegroundColor Green
+$BackendJob = Start-Process -FilePath $VenvPython -ArgumentList "-m", "uvicorn", "app.main:app", "--reload", "--host", "127.0.0.1", "--port", "8000" -WorkingDirectory $BackendDir -PassThru
+
+Write-Host "[2/3] Starting Vite Frontend on http://localhost:5173 ..." -ForegroundColor Green
 $FrontendJob = Start-Process -FilePath "npm.cmd" -ArgumentList "run", "dev" -WorkingDirectory $WebDir -PassThru
+
+$DesktopJob = $null
+if ($LaunchDesktop) {
+    # Wait briefly for Vite dev server so the desktop window loads on first paint
+    $deadline = (Get-Date).AddSeconds(20)
+    while ((Get-Date) -lt $deadline) {
+        if ($FrontendJob.HasExited) { break }
+        try {
+            $probe = New-Object System.Net.Sockets.TcpClient
+            $async = $probe.BeginConnect("localhost", 5173, $null, $null)
+            if ($async.AsyncWaitHandle.WaitOne(250, $false) -and $probe.Connected) {
+                $probe.Close()
+                break
+            }
+            $probe.Close()
+        } catch {
+            # Ignore while Vite is still binding port 5173
+        }
+        Start-Sleep -Milliseconds 200
+    }
+
+    Write-Host "[3/3] Launching XakuGraph Desktop App ($DesktopDebugExe)..." -ForegroundColor Green
+    $DesktopJob = Start-Process -FilePath $DesktopDebugExe -WorkingDirectory $ProjectRoot -PassThru
+}
 
 Write-Host "`n==========================================================" -ForegroundColor Cyan
 Write-Host "  XakuGraph is live:" -ForegroundColor Green
+if ($LaunchDesktop) {
+    Write-Host "  - Desktop App:   XakuGraph Native Window (Tauri 2)" -ForegroundColor White
+}
 Write-Host "  - Web Studio:    http://localhost:5173" -ForegroundColor White
 Write-Host "  - Backend API:   http://127.0.0.1:8000" -ForegroundColor White
 Write-Host "  - OpenAPI Docs:  http://127.0.0.1:8000/docs" -ForegroundColor White
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "Press [Ctrl+C] to stop all local development services.`n" -ForegroundColor Yellow
+Write-Host "Close the desktop window or press [Ctrl+C] to stop all services.`n" -ForegroundColor Yellow
 
 try {
     while ($true) {
         Start-Sleep -Seconds 1
         if ($BackendJob.HasExited) {
-            Write-Warning "Backend process terminated unexpectedly."
+            Write-Warning "Backend process terminated."
             break
         }
         if ($FrontendJob.HasExited) {
-            Write-Warning "Frontend process terminated unexpectedly."
+            Write-Warning "Frontend process terminated."
+            break
+        }
+        if ($DesktopJob -and $DesktopJob.HasExited) {
+            Write-Host "`nDesktop window closed. Shutting down services..." -ForegroundColor Yellow
             break
         }
     }
 } finally {
-    Write-Host "`n[Stopping] Terminating XakuGraph development servers..." -ForegroundColor Yellow
-    if ($BackendJob -and -not $BackendJob.HasExited) {
-        Stop-Process -Id $BackendJob.Id -Force -ErrorAction SilentlyContinue
-    }
-    if ($FrontendJob -and -not $FrontendJob.HasExited) {
-        Stop-Process -Id $FrontendJob.Id -Force -ErrorAction SilentlyContinue
+    Write-Host "`n[Stopping] Terminating XakuGraph development processes..." -ForegroundColor Yellow
+    foreach ($proc in @($DesktopJob, $FrontendJob, $BackendJob)) {
+        if ($proc -and -not $proc.HasExited) {
+            & taskkill /PID $proc.Id /T /F 2>$null | Out-Null
+        }
     }
     Write-Host "[Stopped] Development services shut down cleanly." -ForegroundColor Green
 }
