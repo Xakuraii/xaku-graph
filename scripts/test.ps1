@@ -14,11 +14,16 @@ Write-Host "==========================================================" -Foregro
 Write-Host "  Running XakuGraph Test Suite" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# 1. Rust Core Tests
-Write-Host "`n[1/3] Running Rust Core Unit & Mathematical Tests..." -ForegroundColor Green
+# 1. Rust Core & Desktop Tests
+Write-Host "`n[1/3] Running Rust Unit & Mathematical Tests..." -ForegroundColor Green
 cargo test -p xakugraph-core
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Rust tests failed."
+    Write-Error "Rust core tests failed."
+    exit $LASTEXITCODE
+}
+cargo test -p xakugraph-desktop
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Rust desktop tests failed."
     exit $LASTEXITCODE
 }
 

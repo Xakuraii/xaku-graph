@@ -59,6 +59,37 @@ if (-not (Test-Path $WebModules)) {
 Write-Host "`n[1/2] Starting FastAPI Backend on http://127.0.0.1:8000 ..." -ForegroundColor Green
 $BackendJob = Start-Process -FilePath $VenvPython -ArgumentList "-m", "uvicorn", "app.main:app", "--reload", "--host", "127.0.0.1", "--port", "8000" -WorkingDirectory $BackendDir -PassThru
 
+$FrontendJob = $null
+if ($Desktop) {
+    $DesktopDir = Join-Path $ProjectRoot "desktop"
+    $DesktopModules = Join-Path $DesktopDir "node_modules"
+    if (-not (Test-Path $DesktopModules)) {
+        Write-Host "[Setup] Installing desktop Tauri CLI dependencies..." -ForegroundColor Yellow
+        Push-Location $DesktopDir
+        & npm install
+        Pop-Location
+    }
+
+    Write-Host "[2/2] Starting XakuGraph Tauri Desktop Shell (devUrl: http://localhost:5173)..." -ForegroundColor Green
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "  Backend API: http://127.0.0.1:8000" -ForegroundColor White
+    Write-Host "  Close the XakuGraph Desktop window or press [Ctrl+C] to stop." -ForegroundColor Yellow
+    Write-Host "==========================================================" -ForegroundColor Cyan
+
+    try {
+        Push-Location $DesktopDir
+        & npx.cmd @tauri-apps/cli dev
+    } finally {
+        Pop-Location
+        Write-Host "`n[Stopping] Terminating XakuGraph backend server..." -ForegroundColor Yellow
+        if ($BackendJob -and -not $BackendJob.HasExited) {
+            Stop-Process -Id $BackendJob.Id -Force -ErrorAction SilentlyContinue
+        }
+        Write-Host "[Stopped] Desktop development session shut down cleanly." -ForegroundColor Green
+    }
+    exit 0
+}
+
 Write-Host "[2/2] Starting Vite Frontend on http://localhost:5173 ..." -ForegroundColor Green
 $FrontendJob = Start-Process -FilePath "npm.cmd" -ArgumentList "run", "dev" -WorkingDirectory $WebDir -PassThru
 

@@ -10,6 +10,7 @@ interface HeaderProps {
   onThemeChange: (theme: 'light' | 'dark') => void;
   mobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
+  onRetryBackend?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   onThemeChange,
   mobileMenuOpen = false,
   onToggleMobileMenu,
+  onRetryBackend,
 }) => {
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/85 dark:bg-slate-900/75 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-2 sticky top-0 z-30">
@@ -79,6 +81,15 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-slate-400 dark:text-slate-500 font-mono text-[11px] hidden lg:inline">
               (Port: 8000)
             </span>
+          )}
+          {!loading && health?.status !== 'healthy' && onRetryBackend && (
+            <button
+              type="button"
+              onClick={onRetryBackend}
+              className="ml-1 px-2 py-0.5 rounded bg-brand-600 hover:bg-brand-500 text-white text-[11px] font-medium transition-colors"
+            >
+              Reconnect
+            </button>
           )}
         </div>
 

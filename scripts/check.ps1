@@ -22,7 +22,9 @@ if (Test-Path $RuffBin) {
     Push-Location $BackendDir
     try {
         & $RuffBin check app tests
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         & $RuffBin format --check app tests
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     } finally {
         Pop-Location
     }
@@ -36,6 +38,7 @@ $WebDir = Join-Path $ProjectRoot "web"
 Push-Location $WebDir
 try {
     npm run lint
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } finally {
     Pop-Location
 }
@@ -43,6 +46,9 @@ try {
 # 3. Rust Workspace Check
 Write-Host "`n[3/3] Checking Rust Crates (cargo check)..." -ForegroundColor Green
 cargo check -p xakugraph-core
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+cargo check -p xakugraph-desktop
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "`n==========================================================" -ForegroundColor Cyan
 Write-Host "  All quality checks passed cleanly!" -ForegroundColor Green

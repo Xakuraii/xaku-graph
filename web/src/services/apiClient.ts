@@ -46,7 +46,7 @@ import {
   VectorDbConnectorInfo,
 } from '../types/api';
 
-const API_BASE = '/api';
+import { resolveApiBase } from './desktopBridge';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -56,7 +56,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const url = `${resolveApiBase()}${endpoint}`;
   const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData;
   const headers: HeadersInit = isFormData
     ? { ...options?.headers }

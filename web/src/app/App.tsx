@@ -8,6 +8,10 @@ import { EmbeddingExplorer } from '../features/embeddings/EmbeddingExplorer';
 import { RagExplorer } from '../features/rag/RagExplorer';
 import { MlExplorer } from '../features/machine-learning/MlExplorer';
 import { apiClient } from '../services/apiClient';
+import {
+  ensureDesktopBackendRunning,
+  isTauriDesktop,
+} from '../services/desktopBridge';
 import { HealthResponse } from '../types/api';
 
 function getInitialTheme(): boolean {
@@ -36,22 +40,37 @@ export const App: React.FC = () => {
     }
   }, [isDark]);
 
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const data = await apiClient.getHealth();
-        setHealth(data);
-      } catch {
-        setHealth(null);
-      } finally {
-        setLoadingHealth(false);
+  const checkHealth = useCallback(async () => {
+    try {
+      const data = await apiClient.getHealth();
+      setHealth(data);
+    } catch {
+      if (isTauriDesktop()) {
+        try {
+          await ensureDesktopBackendRunning();
+          const data = await apiClient.getHealth();
+          setHealth(data);
+          return;
+        } catch {
+          // Backend auto-recovery failed; fall through to disconnected state
+        }
       }
-    };
+      setHealth(null);
+    } finally {
+      setLoadingHealth(false);
+    }
+  }, []);
 
+  useEffect(() => {
     void checkHealth();
     const interval = setInterval(() => void checkHealth(), 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [checkHealth]);
+
+  const handleRetryBackend = useCallback(() => {
+    setLoadingHealth(true);
+    void checkHealth();
+  }, [checkHealth]);
 
   const handleThemeChange = useCallback((nextTheme: 'light' | 'dark') => {
     const nextIsDark = nextTheme === 'dark';
@@ -101,6 +120,7 @@ export const App: React.FC = () => {
         onThemeChange={handleThemeChange}
         mobileMenuOpen={mobileMenuOpen}
         onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+        onRetryBackend={isTauriDesktop() ? handleRetryBackend : undefined}
       />
       <AppLayout
         activeModule={activeModule}
