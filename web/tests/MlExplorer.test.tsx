@@ -169,6 +169,7 @@ describe('MlExplorer Stage 3', () => {
     await waitFor(() => {
       expect(screen.getByTestId('ml-confusion-matrix')).toBeInTheDocument();
       expect(screen.getByTestId('ml-per-class-chart')).toBeInTheDocument();
+      expect(screen.getByTestId('ml-confidence-chart')).toBeInTheDocument();
       expect(screen.getByText('setosa')).toBeInTheDocument();
     });
 

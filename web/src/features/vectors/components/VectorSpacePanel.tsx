@@ -47,8 +47,30 @@ export const VectorSpacePanel: React.FC<VectorSpacePanelProps> = ({
       ]
     : [];
 
+  const rayX: (number | null)[] = [];
+  const rayY: (number | null)[] = [];
+  if (matrixResult) {
+    for (const c of matrixResult.coordinates_2d) {
+      rayX.push(0, c.x, null);
+      rayY.push(0, c.y, null);
+    }
+  }
+
   const spaceTraces: Data[] = matrixResult
     ? [
+        {
+          type: 'scatter',
+          mode: 'lines',
+          x: rayX,
+          y: rayY,
+          line: {
+            color: isDark ? 'rgba(56, 189, 248, 0.35)' : 'rgba(14, 165, 233, 0.4)',
+            width: 1.5,
+            dash: 'dot',
+          },
+          hoverinfo: 'skip',
+          name: 'Origin Rays',
+        },
         {
           type: 'scatter',
           mode: 'markers+text',

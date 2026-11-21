@@ -105,6 +105,7 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
     await waitFor(() => {
       expect(screen.getByText('0.99388')).toBeInTheDocument();
       expect(screen.getByText('6.34°')).toBeInTheDocument();
+      expect(screen.getByTestId('vector-angle-chart')).toBeInTheDocument();
       expect(screen.getByTestId('vector-component-chart')).toBeInTheDocument();
     });
   });
@@ -118,6 +119,7 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
     await waitFor(() => {
       expect(screen.getByText('Neural Search')).toBeInTheDocument();
       expect(screen.getByText('Original 4D Coordinates')).toBeInTheDocument();
+      expect(screen.getByTestId('vector-ranking-chart')).toBeInTheDocument();
     });
   });
 

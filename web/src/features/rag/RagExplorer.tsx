@@ -174,6 +174,7 @@ export const RagExplorer: React.FC<RagExplorerProps> = ({ isDark = true }) => {
           selectedDocId={selectedDocId}
           chunkSearch={chunkSearch}
           loading={loadingInspect}
+          isDark={isDark}
           onSelectDoc={setSelectedDocId}
           onChangeChunkSearch={setChunkSearch}
         />

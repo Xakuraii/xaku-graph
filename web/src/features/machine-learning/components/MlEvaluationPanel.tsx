@@ -61,6 +61,41 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
       },
     ];
 
+    const correctConf = run.predictions
+      .filter((p) => p.is_correct === true && p.confidence !== null && p.confidence !== undefined)
+      .map((p) => (p.confidence as number) * 100);
+    const wrongConf = run.predictions
+      .filter((p) => p.is_correct === false && p.confidence !== null && p.confidence !== undefined)
+      .map((p) => (p.confidence as number) * 100);
+
+    const confidenceData: Data[] =
+      correctConf.length > 0 || wrongConf.length > 0
+        ? [
+            ...(correctConf.length > 0
+              ? [
+                  {
+                    type: 'histogram' as const,
+                    name: 'Correct Predictions',
+                    x: correctConf,
+                    opacity: 0.75,
+                    marker: { color: '#22c55e' },
+                  },
+                ]
+              : []),
+            ...(wrongConf.length > 0
+              ? [
+                  {
+                    type: 'histogram' as const,
+                    name: 'Misclassified',
+                    x: wrongConf,
+                    opacity: 0.8,
+                    marker: { color: '#f43f5e' },
+                  },
+                ]
+              : []),
+          ]
+        : [];
+
     return (
       <div className="space-y-6">
         {/* Classification Metrics Strip */}
@@ -136,6 +171,30 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
             />
           </div>
         </div>
+
+        {/* Confidence Calibration Histogram */}
+        {confidenceData.length > 0 && (
+          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                Prediction Confidence Distribution (Correct vs Misclassified)
+              </h3>
+            </div>
+            <PlotlyChart
+              data={confidenceData}
+              isDark={isDark}
+              testId="ml-confidence-chart"
+              className="w-full h-60"
+              layout={{
+                barmode: 'overlay',
+                xaxis: { title: { text: 'Model Confidence (%)' }, range: [0, 105] },
+                yaxis: { title: { text: 'Sample Count' } },
+                legend: { orientation: 'h', y: 1.15 },
+              }}
+            />
+          </div>
+        )}
 
         {/* Per-Class Support Table */}
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
@@ -281,6 +340,34 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
             />
           </div>
         </div>
+
+        {residualVals.length > 0 && (
+          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-sky-500" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                Residual Error Distribution
+              </h3>
+            </div>
+            <PlotlyChart
+              data={[
+                {
+                  type: 'histogram',
+                  name: 'Residuals',
+                  x: residualVals,
+                  marker: { color: '#38bdf8', line: { color: '#0284c7', width: 1 } },
+                },
+              ]}
+              isDark={isDark}
+              testId="ml-residual-hist-chart"
+              className="w-full h-60"
+              layout={{
+                xaxis: { title: { text: 'Residual (Actual - Predicted)' } },
+                yaxis: { title: { text: 'Sample Count' } },
+              }}
+            />
+          </div>
+        )}
       </div>
     );
   }

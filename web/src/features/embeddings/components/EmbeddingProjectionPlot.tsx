@@ -8,6 +8,7 @@ interface EmbeddingProjectionPlotProps {
   projection: ProjectionResponse;
   colorBy: string;
   selectedPointIndex: number | null;
+  highlightNeighborIndices?: number[];
   loading: boolean;
   isDark: boolean;
   onSelectPoint: (pointIndex: number) => void;
@@ -28,6 +29,7 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
   projection,
   colorBy,
   selectedPointIndex,
+  highlightNeighborIndices = [],
   loading,
   isDark,
   onSelectPoint,
@@ -102,7 +104,68 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
     } as unknown as Data;
   });
 
-  const gridColor = isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(100, 116, 139, 0.18)';
+  const neighborLinkTraces: Data[] = [];
+  if (selectedPointIndex !== null && highlightNeighborIndices.length > 0) {
+    const selectedPt = projection.points.find((p) => p.index === selectedPointIndex);
+    if (selectedPt) {
+      const linkX: (number | null)[] = [];
+      const linkY: (number | null)[] = [];
+      const linkZ: (number | null)[] = [];
+      for (const nIdx of highlightNeighborIndices) {
+        const nPt = projection.points.find((p) => p.index === nIdx);
+        if (nPt) {
+          linkX.push(selectedPt.x, nPt.x, null);
+          linkY.push(selectedPt.y, nPt.y, null);
+          if (is3D) {
+            linkZ.push(selectedPt.z ?? 0, nPt.z ?? 0, null);
+          }
+        }
+      }
+      if (linkX.length > 0) {
+        neighborLinkTraces.push(
+          is3D
+            ? ({
+                type: 'scatter3d',
+                mode: 'lines',
+                name: 'High-Dim Neighbors',
+                x: linkX,
+                y: linkY,
+                z: linkZ,
+                line: { color: '#f59e0b', width: 3 },
+                hoverinfo: 'skip',
+              } as unknown as Data)
+            : ({
+                type: 'scatter',
+                mode: 'lines',
+                name: 'High-Dim Neighbors',
+                x: linkX,
+                y: linkY,
+                line: { color: '#f59e0b', width: 2, dash: 'dot' },
+                hoverinfo: 'skip',
+              } as unknown as Data)
+        );
+      }
+    }
+  }
+
+  const allTraces: Data[] = [...neighborLinkTraces, ...traces];
+
+  const varianceChartData: Data[] =
+    projection.explained_variance_ratio && projection.explained_variance_ratio.length > 0
+      ? [
+          {
+            type: 'bar',
+            name: 'Explained Variance %',
+            x: projection.explained_variance_ratio.map((_, i) => `PC${i + 1}`),
+            y: projection.explained_variance_ratio.map((v) => Number((v * 100).toFixed(2))),
+            text: projection.explained_variance_ratio.map((v) => `${(v * 100).toFixed(1)}%`),
+            textposition: 'auto',
+            marker: { color: '#22c55e' },
+          },
+        ]
+      : [];
+
+  const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.18)';
   const layout: Partial<Layout> = is3D
     ? {
         margin: { l: 0, r: 0, t: 20, b: 0 },
@@ -148,7 +211,7 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
             </div>
           ) : (
             <PlotlyChart
-              data={traces}
+              data={allTraces}
               layout={layout}
               isDark={isDark}
               className="w-full h-[26rem]"
@@ -173,6 +236,24 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
                 C{c.cluster_id}: {c.count} ({c.percentage}%)
               </span>
             ))}
+          </div>
+        )}
+
+        {varianceChartData.length > 0 && (
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+              PCA Component Variance Contribution
+            </h3>
+            <PlotlyChart
+              data={varianceChartData}
+              isDark={isDark}
+              testId="embedding-variance-chart"
+              className="w-full h-36"
+              layout={{
+                margin: { l: 44, r: 16, t: 10, b: 28 },
+                yaxis: { title: { text: 'Variance %' } },
+              }}
+            />
           </div>
         )}
       </div>

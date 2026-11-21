@@ -60,6 +60,23 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
       ]
     : [];
 
+  const overlapChartData: Data[] = compareResult
+    ? [
+        {
+          type: 'pie',
+          labels: ['Both Strategies', 'Only Strategy A', 'Only Strategy B'],
+          values: [
+            compareResult.comparison_items.filter((i) => i.status === 'both').length,
+            compareResult.comparison_items.filter((i) => i.status === 'only_a').length,
+            compareResult.comparison_items.filter((i) => i.status === 'only_b').length,
+          ],
+          hole: 0.45,
+          marker: { colors: ['#22c55e', '#f59e0b', '#38bdf8'] },
+          textinfo: 'label+value',
+        },
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
       <form
@@ -183,20 +200,39 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <GitCompare className="w-4 h-4 text-brand-500" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                Score Comparison Across Retrieved Chunks
-              </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-8 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <div className="flex items-center space-x-2">
+                <GitCompare className="w-4 h-4 text-brand-500" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                  Score Comparison Across Retrieved Chunks
+                </h3>
+              </div>
+              <PlotlyChart
+                data={compareChartData}
+                isDark={isDark}
+                testId="rag-compare-chart"
+                className="w-full h-72"
+                layout={{ barmode: 'group', xaxis: { tickangle: -20 } }}
+              />
             </div>
-            <PlotlyChart
-              data={compareChartData}
-              isDark={isDark}
-              testId="rag-compare-chart"
-              className="w-full h-72"
-              layout={{ barmode: 'group', xaxis: { tickangle: -20 } }}
-            />
+
+            <div className="lg:col-span-4 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                Retrieval Agreement Split
+              </h3>
+              <PlotlyChart
+                data={overlapChartData}
+                isDark={isDark}
+                testId="rag-overlap-chart"
+                className="w-full h-72"
+                layout={{
+                  margin: { l: 16, r: 16, t: 16, b: 16 },
+                  showlegend: true,
+                  legend: { orientation: 'h', y: -0.05 },
+                }}
+              />
+            </div>
           </div>
 
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">

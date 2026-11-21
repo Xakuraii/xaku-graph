@@ -159,7 +159,9 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ isDark = true 
       {/* Tab Content */}
       {inspection && (
         <div>
-          {activeTab === 'overview' && <DatasetOverviewPanel dataset={inspection} />}
+          {activeTab === 'overview' && (
+            <DatasetOverviewPanel dataset={inspection} isDark={isDark} />
+          )}
           {activeTab === 'data' && (
             <DatasetRowsTable
               columns={inspection.summary.columns}

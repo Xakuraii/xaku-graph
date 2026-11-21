@@ -130,6 +130,7 @@ export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = ({ isDark = t
               projection={projection}
               colorBy={colorBy}
               selectedPointIndex={selectedPointIndex}
+              highlightNeighborIndices={pointInspection?.neighbors.map((n) => n.index) ?? []}
               loading={loadingProjection}
               isDark={isDark}
               onSelectPoint={(idx) => void inspectPoint(idx)}

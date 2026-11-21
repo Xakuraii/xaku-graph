@@ -302,6 +302,7 @@ describe('RagExplorer Stage 3', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('rag-compare-chart')).toBeInTheDocument();
+      expect(screen.getByTestId('rag-overlap-chart')).toBeInTheDocument();
       expect(screen.getByText('50.0%')).toBeInTheDocument();
       expect(screen.getByText('Only B')).toBeInTheDocument();
     });

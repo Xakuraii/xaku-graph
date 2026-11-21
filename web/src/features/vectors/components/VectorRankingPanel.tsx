@@ -1,6 +1,8 @@
 import React from 'react';
-import { ListOrdered, Search, ShieldCheck } from 'lucide-react';
+import { BarChart3, ListOrdered, Search, ShieldCheck } from 'lucide-react';
+import { Data } from 'plotly.js-dist-min';
 import { DistanceMetric, VectorSearchResponse } from '../../../types/api';
+import { PlotlyChart } from '../../../components/charts/PlotlyChart';
 
 interface VectorRankingPanelProps {
   queryStr: string;
@@ -8,6 +10,7 @@ interface VectorRankingPanelProps {
   metric: DistanceMetric;
   searchResult: VectorSearchResponse | null;
   loading: boolean;
+  isDark?: boolean;
   onChangeQuery: (val: string) => void;
   onChangeCandidates: (val: string) => void;
   onChangeMetric: (m: DistanceMetric) => void;
@@ -27,11 +30,28 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
   metric,
   searchResult,
   loading,
+  isDark = true,
   onChangeQuery,
   onChangeCandidates,
   onChangeMetric,
   onSearch,
 }) => {
+  const reversed = searchResult ? [...searchResult.results].reverse() : [];
+  const rankChartData: Data[] = searchResult
+    ? [
+        {
+          type: 'bar',
+          orientation: 'h',
+          y: reversed.map((r) => `#${r.rank} ${r.label}`),
+          x: reversed.map((r) => r.score),
+          text: reversed.map((r) => r.score.toFixed(4)),
+          textposition: 'auto',
+          marker: { color: '#22c55e' },
+          name: searchResult.metric,
+        },
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -106,7 +126,29 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
       </div>
 
       {searchResult && (
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="space-y-6">
+          {searchResult.results.length > 0 && (
+            <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="w-4 h-4 text-brand-500" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                  Candidate Ranking Score Comparison ({searchResult.metric})
+                </h3>
+              </div>
+              <PlotlyChart
+                data={rankChartData}
+                isDark={isDark}
+                testId="vector-ranking-chart"
+                className="w-full h-64"
+                layout={{
+                  margin: { l: 110, r: 24, t: 12, b: 36 },
+                  xaxis: { title: { text: searchResult.metric } },
+                }}
+              />
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
               <ListOrdered className="w-4 h-4 text-brand-500" />
@@ -148,6 +190,7 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         </div>
       )}

@@ -53,6 +53,44 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
         ]
       : [];
 
+  const angleRad = ((result?.angle_degrees ?? 0) * Math.PI) / 180;
+  const circleAngles = Array.from({ length: 65 }, (_, i) => (i / 64) * 2 * Math.PI);
+  const anglePlaneData: Data[] = result
+    ? [
+        {
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Unit Circle',
+          x: circleAngles.map((a) => Math.cos(a)),
+          y: circleAngles.map((a) => Math.sin(a)),
+          line: { color: isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.28)', dash: 'dot', width: 1 },
+          hoverinfo: 'skip',
+        },
+        {
+          type: 'scatter',
+          mode: 'lines+markers+text',
+          name: 'Unit A (0°)',
+          x: [0, 1],
+          y: [0, 0],
+          text: ['', 'Â'],
+          textposition: 'middle right',
+          line: { color: '#22c55e', width: 3 },
+          marker: { size: [4, 10], color: '#22c55e' },
+        },
+        {
+          type: 'scatter',
+          mode: 'lines+markers+text',
+          name: `Unit B (${(result.angle_degrees ?? 0).toFixed(1)}°)`,
+          x: [0, Math.cos(angleRad)],
+          y: [0, Math.sin(angleRad)],
+          text: ['', 'B̂'],
+          textposition: 'top center',
+          line: { color: '#38bdf8', width: 3 },
+          marker: { size: [4, 10], color: '#38bdf8' },
+        },
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
       {/* Presets */}
@@ -199,34 +237,59 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
             </div>
           </div>
 
-          {/* Component Comparison Chart */}
-          {inspectA && inspectB && (
-            <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Component-Wise Vector Comparison
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setShowNormalized((prev) => !prev)}
-                  className="text-xs px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:border-brand-500"
-                >
-                  {showNormalized ? 'Showing L2 Normalized' : 'Showing Raw Values'} (Toggle)
-                </button>
-              </div>
+          {/* Component & Geometric Angle Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-5 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                Unit-Plane Angle Geometry (θ = {(result.angle_degrees ?? 0).toFixed(2)}°)
+              </h3>
               <PlotlyChart
-                data={componentChartData}
+                data={anglePlaneData}
                 isDark={isDark}
-                testId="vector-component-chart"
+                testId="vector-angle-chart"
                 className="w-full h-64"
                 layout={{
-                  barmode: 'group',
-                  xaxis: { title: { text: 'Dimension Index' } },
-                  yaxis: { title: { text: showNormalized ? 'Normalized Value' : 'Component Value' } },
+                  xaxis: { range: [-1.3, 1.3], zeroline: true, title: { text: 'Unit X' } },
+                  yaxis: {
+                    range: [-1.3, 1.3],
+                    scaleanchor: 'x',
+                    scaleratio: 1,
+                    zeroline: true,
+                    title: { text: 'Unit Y' },
+                  },
+                  legend: { orientation: 'h', y: 1.15 },
                 }}
               />
             </div>
-          )}
+
+            {inspectA && inspectB && (
+              <div className="lg:col-span-7 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Component-Wise Vector Comparison
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowNormalized((prev) => !prev)}
+                    className="text-xs px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:border-brand-500"
+                  >
+                    {showNormalized ? 'Showing L2 Normalized' : 'Showing Raw Values'} (Toggle)
+                  </button>
+                </div>
+                <PlotlyChart
+                  data={componentChartData}
+                  isDark={isDark}
+                  testId="vector-component-chart"
+                  className="w-full h-64"
+                  layout={{
+                    barmode: 'group',
+                    xaxis: { title: { text: 'Dimension Index' } },
+                    yaxis: { title: { text: showNormalized ? 'Normalized Value' : 'Component Value' } },
+                  }}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Norms & Normalized Vectors */}
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xs font-mono space-y-2 text-slate-600 dark:text-slate-300">

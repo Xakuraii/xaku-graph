@@ -35,6 +35,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
   const [xCol, setXCol] = useState<string>('');
   const [yCol, setYCol] = useState<string>('');
   const [colorCol, setColorCol] = useState<string>('');
+  const [showTrendline, setShowTrendline] = useState<boolean>(true);
   const initializedColsKeyRef = useRef<string>('');
 
   const colsSignature = `${numericCols.join('|')}::${categoricalCols.join('|')}`;
@@ -89,40 +90,78 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
     },
   ];
 
-  // Build scatter plot traces grouped by optional colorCol
+  // Lookup exact correlation r for selected (xCol, yCol)
+  const xIdx = correlations.columns.indexOf(xCol);
+  const yIdx = correlations.columns.indexOf(yCol);
+  const pairCorr =
+    xIdx !== -1 && yIdx !== -1 ? correlations.matrix[xIdx]?.[yIdx] ?? null : null;
+
+  // Build scatter plot traces grouped by optional colorCol + optional OLS fit
   const buildScatterTraces = (): Data[] => {
     if (!xCol || !yCol || previewRows.length === 0) return [];
 
+    const traces: Data[] = [];
     if (!colorCol) {
-      return [
-        {
+      traces.push({
+        type: 'scatter',
+        mode: 'markers',
+        x: previewRows.map((r) => r[xCol] as number),
+        y: previewRows.map((r) => r[yCol] as number),
+        marker: { size: 8, color: '#22c55e', opacity: 0.85 },
+        name: 'Rows',
+      });
+    } else {
+      const groups = new Map<string, { x: unknown[]; y: unknown[] }>();
+      for (const row of previewRows) {
+        const key =
+          row[colorCol] === null || row[colorCol] === undefined ? 'null' : String(row[colorCol]);
+        const bucket = groups.get(key) ?? { x: [], y: [] };
+        bucket.x.push(row[xCol]);
+        bucket.y.push(row[yCol]);
+        groups.set(key, bucket);
+      }
+
+      for (const [groupName, coords] of groups.entries()) {
+        traces.push({
           type: 'scatter',
           mode: 'markers',
-          x: previewRows.map((r) => r[xCol] as number),
-          y: previewRows.map((r) => r[yCol] as number),
-          marker: { size: 8, color: '#22c55e', opacity: 0.85 },
-          name: 'Rows',
-        },
-      ];
+          name: groupName,
+          x: coords.x as number[],
+          y: coords.y as number[],
+          marker: { size: 8, opacity: 0.85 },
+        });
+      }
     }
 
-    const groups = new Map<string, { x: unknown[]; y: unknown[] }>();
-    for (const row of previewRows) {
-      const key = row[colorCol] === null || row[colorCol] === undefined ? 'null' : String(row[colorCol]);
-      const bucket = groups.get(key) ?? { x: [], y: [] };
-      bucket.x.push(row[xCol]);
-      bucket.y.push(row[yCol]);
-      groups.set(key, bucket);
+    if (showTrendline) {
+      const pairs = previewRows
+        .map((r) => [Number(r[xCol]), Number(r[yCol])] as const)
+        .filter(([xv, yv]) => Number.isFinite(xv) && Number.isFinite(yv));
+      if (pairs.length >= 2) {
+        const n = pairs.length;
+        const meanX = pairs.reduce((s, [xv]) => s + xv, 0) / n;
+        const meanY = pairs.reduce((s, [, yv]) => s + yv, 0) / n;
+        const num = pairs.reduce((s, [xv, yv]) => s + (xv - meanX) * (yv - meanY), 0);
+        const den = pairs.reduce((s, [xv]) => s + (xv - meanX) ** 2, 0);
+        if (den > 1e-12) {
+          const slope = num / den;
+          const intercept = meanY - slope * meanX;
+          const xs = pairs.map(([xv]) => xv);
+          const minX = Math.min(...xs);
+          const maxX = Math.max(...xs);
+          traces.push({
+            type: 'scatter',
+            mode: 'lines',
+            name: 'OLS Trendline',
+            x: [minX, maxX],
+            y: [slope * minX + intercept, slope * maxX + intercept],
+            line: { color: '#f59e0b', width: 2, dash: 'dash' },
+          });
+        }
+      }
     }
 
-    return Array.from(groups.entries()).map(([groupName, coords]) => ({
-      type: 'scatter',
-      mode: 'markers',
-      name: groupName,
-      x: coords.x as number[],
-      y: coords.y as number[],
-      marker: { size: 8, opacity: 0.85 },
-    }));
+    return traces;
   };
 
   return (
@@ -179,6 +218,24 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Feature Relationship Scatter ({previewRows.length} preview rows)
               </h3>
+            </div>
+            <div className="flex items-center space-x-2">
+              {pairCorr !== null && (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-brand-500/15 text-brand-700 dark:text-brand-400">
+                  {method === 'pearson' ? 'r' : 'ρ'} = {pairCorr.toFixed(3)}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowTrendline((prev) => !prev)}
+                className={`text-[11px] px-2 py-0.5 rounded border transition-colors ${
+                  showTrendline
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300'
+                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                {showTrendline ? 'Trendline: On' : 'Trendline: Off'}
+              </button>
             </div>
           </div>
 

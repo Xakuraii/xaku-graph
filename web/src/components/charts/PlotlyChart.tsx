@@ -30,6 +30,8 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
 
     const textColor = isDark ? '#f1f5f9' : '#1e293b';
     const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.18)';
+    const hoverBg = isDark ? '#0f172a' : '#ffffff';
+    const hoverBorder = isDark ? '#334155' : '#cbd5e1';
 
     const { xaxis, yaxis, margin, ...restLayout } = layout;
 
@@ -37,6 +39,11 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
       autosize: true,
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
+      hoverlabel: {
+        bgcolor: hoverBg,
+        bordercolor: hoverBorder,
+        font: { color: textColor, size: 11 },
+      },
       font: {
         color: textColor,
         family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -62,6 +69,11 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
       responsive: true,
       displaylogo: false,
       modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+      toImageButtonOptions: {
+        format: 'png',
+        filename: testId ?? 'xakugraph-chart',
+        scale: 2,
+      },
       ...config,
     };
 

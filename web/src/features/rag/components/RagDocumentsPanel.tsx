@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Binary, FileText, Layers, Search } from 'lucide-react';
+import { BarChart3, Binary, FileText, Layers, Search } from 'lucide-react';
+import { Data } from 'plotly.js-dist-min';
 import { RagCollectionInspectResponse } from '../../../types/api';
+import { PlotlyChart } from '../../../components/charts/PlotlyChart';
 
 interface RagDocumentsPanelProps {
   inspection: RagCollectionInspectResponse | null;
   selectedDocId: string;
   chunkSearch: string;
   loading: boolean;
+  isDark?: boolean;
   onSelectDoc: (docId: string) => void;
   onChangeChunkSearch: (search: string) => void;
 }
@@ -16,6 +19,7 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
   selectedDocId,
   chunkSearch,
   loading,
+  isDark = true,
   onSelectDoc,
   onChangeChunkSearch,
 }) => {
@@ -36,6 +40,19 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
       </div>
     );
   }
+
+  const chunkLenChartData: Data[] =
+    inspection.chunks.length > 0
+      ? [
+          {
+            type: 'bar',
+            name: 'Chunk Length (chars)',
+            x: inspection.chunks.map((c) => `#${c.chunk_index} ${c.doc_title.slice(0, 14)}`),
+            y: inspection.chunks.map((c) => c.char_count),
+            marker: { color: '#38bdf8' },
+          },
+        ]
+      : [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -107,6 +124,27 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
             {inspection.chunks.length} / {inspection.total_chunks} chunks
           </span>
         </div>
+
+        {chunkLenChartData.length > 0 && (
+          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-1.5">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-sky-500" />
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                Chunk Size Balance (Characters per Chunk)
+              </h3>
+            </div>
+            <PlotlyChart
+              data={chunkLenChartData}
+              isDark={isDark}
+              testId="rag-chunk-stats-chart"
+              className="w-full h-44"
+              layout={{
+                margin: { l: 44, r: 16, t: 10, b: 36 },
+                yaxis: { title: { text: 'Characters' } },
+              }}
+            />
+          </div>
+        )}
 
         <div className="space-y-3">
           {inspection.chunks.length === 0 ? (

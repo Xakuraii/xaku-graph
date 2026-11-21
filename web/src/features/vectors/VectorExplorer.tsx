@@ -135,6 +135,7 @@ export const VectorExplorer: React.FC<VectorExplorerProps> = ({ isDark = true })
           metric={metric}
           searchResult={searchResult}
           loading={loading}
+          isDark={isDark}
           onChangeQuery={setQueryStr}
           onChangeCandidates={setCandidateLines}
           onChangeMetric={setMetric}

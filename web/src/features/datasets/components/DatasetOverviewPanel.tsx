@@ -1,9 +1,12 @@
 import React from 'react';
-import { CheckCircle2, FileSpreadsheet, Table } from 'lucide-react';
+import { BarChart3, CheckCircle2, FileSpreadsheet, Table } from 'lucide-react';
+import { Data } from 'plotly.js-dist-min';
 import { DatasetInspectionResponse } from '../../../types/api';
+import { PlotlyChart } from '../../../components/charts/PlotlyChart';
 
 interface DatasetOverviewPanelProps {
   dataset: DatasetInspectionResponse;
+  isDark?: boolean;
 }
 
 const formatNum = (val: number | string | null | undefined, digits = 3): string => {
@@ -12,7 +15,45 @@ const formatNum = (val: number | string | null | undefined, digits = 3): string 
   return String(val);
 };
 
-export const DatasetOverviewPanel: React.FC<DatasetOverviewPanelProps> = ({ dataset }) => {
+export const DatasetOverviewPanel: React.FC<DatasetOverviewPanelProps> = ({
+  dataset,
+  isDark = true,
+}) => {
+  const isNumericDtype = (dtype: string) =>
+    /^(Int|UInt|Float|Decimal)/i.test(dtype);
+
+  const numericCols = dataset.columns.filter((c) => isNumericDtype(c.dtype));
+  const categoricalCols = dataset.columns.filter((c) => !isNumericDtype(c.dtype));
+
+  const overviewChartData: Data[] = [
+    ...(numericCols.length > 0
+      ? [
+          {
+            type: 'bar' as const,
+            name: 'Numeric Unique Values',
+            x: numericCols.map((c) => c.name),
+            y: numericCols.map((c) => c.unique_count),
+            text: numericCols.map((c) => `${c.unique_count} uniq`),
+            textposition: 'auto' as const,
+            marker: { color: '#22c55e' },
+          },
+        ]
+      : []),
+    ...(categoricalCols.length > 0
+      ? [
+          {
+            type: 'bar' as const,
+            name: 'Categorical / Text Unique Values',
+            x: categoricalCols.map((c) => c.name),
+            y: categoricalCols.map((c) => c.unique_count),
+            text: categoricalCols.map((c) => `${c.unique_count} uniq`),
+            textposition: 'auto' as const,
+            marker: { color: '#38bdf8' },
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="space-y-6">
       {/* Summary Stat Cards */}
@@ -58,6 +99,35 @@ export const DatasetOverviewPanel: React.FC<DatasetOverviewPanelProps> = ({ data
           </div>
         </div>
       </div>
+
+      {/* Column Cardinality & Types Visual */}
+      {dataset.columns.length > 0 && (
+        <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-brand-500" />
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                Column Cardinality & Feature Types
+              </h2>
+            </div>
+            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
+              {numericCols.length} numeric · {categoricalCols.length} non-numeric
+            </span>
+          </div>
+          <PlotlyChart
+            data={overviewChartData}
+            isDark={isDark}
+            testId="dataset-overview-chart"
+            className="w-full h-60"
+            layout={{
+              barmode: 'group',
+              xaxis: { tickangle: -20 },
+              yaxis: { title: { text: 'Unique Values' } },
+              legend: { orientation: 'h', y: 1.15 },
+            }}
+          />
+        </div>
+      )}
 
       {/* Column Statistics Table */}
       <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
