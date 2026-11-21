@@ -75,7 +75,7 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
               key={item.label}
               className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4"
             >
-              <span className="text-xs text-slate-500">{item.label}</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{item.label}</span>
               <p className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1">
                 {item.value}
               </p>
@@ -232,7 +232,7 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
               key={item.label}
               className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4"
             >
-              <span className="text-xs text-slate-500">{item.label}</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{item.label}</span>
               <p className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">
                 {item.value}
               </p>

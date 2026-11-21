@@ -17,7 +17,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
 }) => {
   if (loading && !data) {
     return (
-      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-500">
+      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400">
         Analyzing missing values, duplicates, and outliers...
       </div>
     );
@@ -25,7 +25,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
 
   if (!data) {
     return (
-      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
         No quality report available.
       </div>
     );
@@ -78,7 +78,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {data.completeness_percentage.toFixed(2)}%
           </p>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-600 dark:text-slate-400">
             {(data.total_cells - data.total_missing_cells).toLocaleString()} /{' '}
             {data.total_cells.toLocaleString()} valid cells
           </span>
@@ -98,7 +98,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {data.total_missing_cells.toLocaleString()}
           </p>
-          <span className="text-xs text-slate-500">Across {data.column_count} columns</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Across {data.column_count} columns</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
@@ -111,7 +111,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {data.duplicate_row_count.toLocaleString()}
           </p>
-          <span className="text-xs text-slate-500">Exact row duplicates</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Exact row duplicates</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
@@ -124,7 +124,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {columnsWithOutliers}
           </p>
-          <span className="text-xs text-slate-500">Detected via 1.5x IQR fences</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Detected via 1.5x IQR fences</span>
         </div>
       </div>
 
@@ -188,7 +188,7 @@ export const DatasetQualityPanel: React.FC<DatasetQualityPanelProps> = ({
                   <td className="px-4 py-2.5 font-medium text-slate-900 dark:text-white">
                     {col.column}
                   </td>
-                  <td className="px-4 py-2.5 font-mono text-slate-500">{col.dtype}</td>
+                  <td className="px-4 py-2.5 font-mono text-slate-600 dark:text-slate-400">{col.dtype}</td>
                   <td className="px-4 py-2.5">
                     {col.null_count === 0 ? (
                       <span className="text-emerald-600 dark:text-emerald-400">0 (0%)</span>

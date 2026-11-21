@@ -36,7 +36,7 @@ export const DatasetOverviewPanel: React.FC<DatasetOverviewPanelProps> = ({ data
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {dataset.summary.row_count.toLocaleString()}
           </p>
-          <span className="text-xs text-slate-500">Rows in dataset</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Rows in dataset</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
@@ -44,7 +44,7 @@ export const DatasetOverviewPanel: React.FC<DatasetOverviewPanelProps> = ({ data
           <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {dataset.summary.column_count}
           </p>
-          <span className="text-xs text-slate-500">Numeric & Categorical</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400">Numeric & Categorical</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">

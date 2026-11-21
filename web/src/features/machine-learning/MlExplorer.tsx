@@ -126,7 +126,7 @@ export const MlExplorer: React.FC<MlExplorerProps> = ({ isDark = true }) => {
       </div>
 
       {loadingRun || !runDetail ? (
-        <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-10 text-center text-xs text-slate-500">
+        <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-10 text-center text-xs text-slate-600 dark:text-slate-400">
           {loading || loadingRun ? 'Loading ML evaluation run...' : 'Select or train a run to begin.'}
         </div>
       ) : (

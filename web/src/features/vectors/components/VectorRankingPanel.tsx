@@ -98,7 +98,7 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
           type="button"
           onClick={onSearch}
           disabled={loading}
-          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-sm transition-colors disabled:opacity-50"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-colors disabled:opacity-50"
         >
           <Search className="w-4 h-4" />
           <span>{loading ? 'Ranking...' : 'Rank Nearest Neighbors'}</span>

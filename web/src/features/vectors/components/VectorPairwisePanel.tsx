@@ -126,7 +126,7 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
           type="button"
           onClick={onCalculate}
           disabled={loading}
-          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-sm transition-colors shadow-sm disabled:opacity-50"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-colors shadow-sm disabled:opacity-50"
         >
           <Play className="w-4 h-4 fill-current" />
           <span>{loading ? 'Computing...' : 'Calculate Similarity & Distance'}</span>
@@ -231,16 +231,16 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
           {/* Norms & Normalized Vectors */}
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xs font-mono space-y-2 text-slate-600 dark:text-slate-300">
             <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-              <span className="text-slate-500">||A|| (L2 Norm of A):</span>
+              <span className="text-slate-600 dark:text-slate-400">||A|| (L2 Norm of A):</span>
               <span className="text-slate-900 dark:text-white">{result.norm_a.toFixed(6)}</span>
             </div>
             <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-              <span className="text-slate-500">||B|| (L2 Norm of B):</span>
+              <span className="text-slate-600 dark:text-slate-400">||B|| (L2 Norm of B):</span>
               <span className="text-slate-900 dark:text-white">{result.norm_b.toFixed(6)}</span>
             </div>
             {result.normalized_a && (
               <div className="pt-1">
-                <span className="text-slate-500 block mb-1">Unit-Normalized Vector A:</span>
+                <span className="text-slate-600 dark:text-slate-400 block mb-1">Unit-Normalized Vector A:</span>
                 <span className="text-[11px] break-all">
                   [{result.normalized_a.map((v) => v.toFixed(4)).join(', ')}]
                 </span>
@@ -248,7 +248,7 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
             )}
             {result.normalized_b && (
               <div className="pt-1">
-                <span className="text-slate-500 block mb-1">Unit-Normalized Vector B:</span>
+                <span className="text-slate-600 dark:text-slate-400 block mb-1">Unit-Normalized Vector B:</span>
                 <span className="text-[11px] break-all">
                   [{result.normalized_b.map((v) => v.toFixed(4)).join(', ')}]
                 </span>

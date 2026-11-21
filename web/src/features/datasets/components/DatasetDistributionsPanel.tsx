@@ -32,7 +32,7 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
 
   if (loading && !data) {
     return (
-      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-500">
+      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400">
         Computing distributions and quartiles...
       </div>
     );
@@ -40,7 +40,7 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
 
   if (!data || data.distributions.length === 0) {
     return (
-      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
         No columns available for distribution analysis.
       </div>
     );

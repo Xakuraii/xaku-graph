@@ -137,7 +137,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 type="button"
                 onClick={onCloseMobileMenu}
                 aria-label="Close navigation menu"
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>

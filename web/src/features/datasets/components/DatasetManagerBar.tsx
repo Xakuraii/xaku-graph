@@ -226,7 +226,7 @@ export const DatasetManagerBar: React.FC<DatasetManagerBarProps> = ({
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs transition-colors disabled:opacity-50"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-colors disabled:opacity-50"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Choose File</span>
@@ -336,7 +336,7 @@ export const DatasetManagerBar: React.FC<DatasetManagerBarProps> = ({
             <button
               type="submit"
               disabled={uploading || !pasteContent.trim()}
-              className="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold disabled:opacity-50"
+              className="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold disabled:opacity-50"
             >
               {uploading ? 'Importing...' : 'Import Pasted Data'}
             </button>

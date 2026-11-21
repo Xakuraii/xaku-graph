@@ -79,53 +79,53 @@ export const MlTrainingPanel: React.FC<MlTrainingPanelProps> = ({ run, isDark })
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
             <span>{run.task_type === 'classification' ? 'Validation Accuracy' : 'Validation R²'}</span>
             <Target className="w-4 h-4 text-emerald-500" />
           </div>
           <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1.5">
             {primaryDisplay}
           </p>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
             Target: {run.target_column}
           </span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
             <span>{secondaryLabel}</span>
             <Activity className="w-4 h-4 text-sky-500" />
           </div>
           <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1.5">
             {secondaryValue}
           </p>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
             Algorithm: {run.algorithm}
           </span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
             <span>Split Samples</span>
             <Layers className="w-4 h-4 text-purple-500" />
           </div>
           <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1.5">
             {run.train_count > 0 ? `${run.train_count} / ${run.val_count}` : run.val_count}
           </p>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
             {run.train_count > 0 ? 'Train / Validation' : 'Evaluated Predictions'}
           </span>
         </div>
 
         <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
             <span>Training Steps</span>
             <LineChart className="w-4 h-4 text-amber-500" />
           </div>
           <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1.5">
             {run.training_history.length}
           </p>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
             {run.feature_columns.length} input features
           </span>
         </div>

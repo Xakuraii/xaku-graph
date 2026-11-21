@@ -178,8 +178,8 @@ export const RagSandboxBuilder: React.FC<RagSandboxBuilderProps> = ({
             onClick={() => setInputMode('form')}
             className={`px-2.5 py-1 rounded-md ${
               inputMode === 'form'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             Document Editor ({docs.length})
@@ -189,8 +189,8 @@ export const RagSandboxBuilder: React.FC<RagSandboxBuilderProps> = ({
             onClick={() => setInputMode('paste')}
             className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-md ${
               inputMode === 'paste'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
@@ -338,7 +338,7 @@ export const RagSandboxBuilder: React.FC<RagSandboxBuilderProps> = ({
         <button
           type="submit"
           disabled={creating}
-          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs disabled:opacity-50"
+          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs disabled:opacity-50"
         >
           {creating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           <span>{creating ? 'Chunking & Indexing...' : 'Chunk & Index Locally'}</span>

@@ -106,7 +106,7 @@ export const MlExplainabilityPanel: React.FC<MlExplainabilityPanelProps> = ({ ru
             }}
           />
         ) : (
-          <p className="text-xs text-slate-500 py-4">
+          <p className="text-xs text-slate-600 dark:text-slate-400 py-4">
             No feature importance scores were attached to this imported run.
           </p>
         )}
@@ -178,7 +178,7 @@ export const MlExplainabilityPanel: React.FC<MlExplainabilityPanelProps> = ({ ru
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-mono text-slate-700 dark:text-slate-300">
               {filteredPredictions.slice(0, 100).map((row) => (
                 <tr key={row.index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                  <td className="px-3 py-2 text-slate-500">{row.index}</td>
+                  <td className="px-3 py-2 text-slate-600 dark:text-slate-400">{row.index}</td>
                   <td className="px-3 py-2 font-semibold text-slate-900 dark:text-white">
                     {String(row.actual)}
                   </td>

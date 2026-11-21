@@ -54,7 +54,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
 
   if (loading && !correlations) {
     return (
-      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-500">
+      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400">
         Computing feature correlation matrix...
       </div>
     );
@@ -62,7 +62,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
 
   if (!correlations || correlations.columns.length < 2) {
     return (
-      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
         Correlation analysis requires at least 2 numeric columns.
       </div>
     );
@@ -144,8 +144,8 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
               onClick={() => onChangeMethod(m)}
               className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
                 method === m
-                  ? 'bg-brand-600 text-slate-950 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-brand-600 text-white font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {m}
@@ -184,7 +184,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">X Axis</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">X Axis</label>
               <select
                 aria-label="Scatter X Axis"
                 value={xCol}
@@ -199,7 +199,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
               </select>
             </div>
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Y Axis</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Y Axis</label>
               <select
                 aria-label="Scatter Y Axis"
                 value={yCol}
@@ -214,7 +214,7 @@ export const DatasetCorrelationsPanel: React.FC<DatasetCorrelationsPanelProps> =
               </select>
             </div>
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Color By</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Color By</label>
               <select
                 aria-label="Scatter Color By"
                 value={colorCol}

@@ -86,7 +86,7 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="inline-flex items-center justify-center space-x-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs transition-colors disabled:opacity-50 shrink-0"
+            className="inline-flex items-center justify-center space-x-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-colors disabled:opacity-50 shrink-0"
           >
             <Search className="w-3.5 h-3.5" />
             <span>{loading ? 'Retrieving...' : 'Run Retrieval Search'}</span>
@@ -217,17 +217,17 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
                     <span className="font-semibold text-slate-900 dark:text-white">
                       {hit.doc_title}
                     </span>
-                    <span className="font-mono text-slate-500">Chunk #{hit.chunk_index}</span>
+                    <span className="font-mono text-slate-600 dark:text-slate-400">Chunk #{hit.chunk_index}</span>
                   </div>
 
                   <div className="flex items-center space-x-3 font-mono text-[11px]">
                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
                       cos: {hit.cosine_similarity.toFixed(4)}
                     </span>
-                    <span className="text-slate-500">
+                    <span className="text-slate-600 dark:text-slate-400">
                       L2: {hit.euclidean_distance.toFixed(4)}
                     </span>
-                    <span className="text-slate-500">dot: {hit.dot_product.toFixed(4)}</span>
+                    <span className="text-slate-600 dark:text-slate-400">dot: {hit.dot_product.toFixed(4)}</span>
                   </div>
                 </div>
 

@@ -154,8 +154,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             onClick={() => setMode('text')}
             className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${
               mode === 'text'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -166,8 +166,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             onClick={() => setMode('dataset')}
             className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${
               mode === 'dataset'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <Database className="w-3.5 h-3.5" />
@@ -178,8 +178,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             onClick={() => setMode('image')}
             className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${
               mode === 'image'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <ImageIcon className="w-3.5 h-3.5" />
@@ -317,7 +317,7 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             multiple
             accept=".png,.jpg,.jpeg,.webp,.bmp"
             onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
-            className="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-800 dark:file:text-slate-200"
+            className="block w-full text-xs text-slate-600 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-800 dark:file:text-slate-200"
           />
           {imageFiles.length > 0 && (
             <p className="text-[11px] text-slate-400 mt-1">
@@ -338,7 +338,7 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
         <button
           type="submit"
           disabled={creating || (mode === 'image' && imageFiles.length < 2)}
-          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs disabled:opacity-50"
+          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs disabled:opacity-50"
         >
           {creating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           <span>{creating ? 'Generating Embeddings...' : 'Generate & Project'}</span>

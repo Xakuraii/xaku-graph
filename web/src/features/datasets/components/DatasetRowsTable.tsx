@@ -122,7 +122,7 @@ export const DatasetRowsTable: React.FC<DatasetRowsTableProps> = ({
 
           <button
             type="submit"
-            className="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-colors"
           >
             Apply
           </button>

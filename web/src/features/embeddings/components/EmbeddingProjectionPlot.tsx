@@ -161,7 +161,7 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
         {/* Cluster Summary Badges */}
         {projection.clusters.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800/80 text-[11px]">
-            <span className="text-slate-500 font-medium flex items-center space-x-1">
+            <span className="text-slate-600 dark:text-slate-400 font-medium flex items-center space-x-1">
               <Layers className="w-3.5 h-3.5" />
               <span>Clusters:</span>
             </span>
@@ -183,7 +183,7 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
           <span className="font-semibold text-slate-700 dark:text-slate-300">
             Projected Items (click any item to inspect original data & high-dim neighbors)
           </span>
-          <span className="text-slate-500 font-mono">{projection.points.length} visible</span>
+          <span className="text-slate-600 dark:text-slate-400 font-mono">{projection.points.length} visible</span>
         </div>
         <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1">
           {projection.points.map((pt) => {
@@ -195,7 +195,7 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
                 onClick={() => onSelectPoint(pt.index)}
                 className={`px-2.5 py-1 rounded-md text-xs border transition-colors ${
                   isSelected
-                    ? 'bg-brand-600 text-slate-950 font-semibold border-brand-500'
+                    ? 'bg-brand-600 text-white font-semibold border-brand-500'
                     : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-brand-500/50'
                 }`}
               >

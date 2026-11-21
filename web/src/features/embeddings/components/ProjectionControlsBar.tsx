@@ -45,10 +45,10 @@ export const ProjectionControlsBar: React.FC<ProjectionControlsBarProps> = ({
                 onClick={() => onChangeParams({ method: r.method as ReductionMethod })}
                 className={`px-3 py-1 rounded-md uppercase font-medium transition-colors ${
                   params.method === r.method
-                    ? 'bg-brand-600 text-slate-950 font-semibold'
+                    ? 'bg-brand-600 text-white font-semibold'
                     : r.available
-                    ? 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    : 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                    ? 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                    : 'text-slate-400 dark:text-slate-600 dark:text-slate-400 cursor-not-allowed opacity-60'
                 }`}
               >
                 {r.method}
@@ -69,8 +69,8 @@ export const ProjectionControlsBar: React.FC<ProjectionControlsBarProps> = ({
                 onClick={() => onChangeParams({ dimensions: dim })}
                 className={`px-2.5 py-1 rounded-md font-mono font-medium transition-colors ${
                   params.dimensions === dim
-                    ? 'bg-sky-500 text-slate-950 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-sky-600 text-white font-semibold'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {dim}D

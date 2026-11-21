@@ -91,7 +91,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
               <span className="font-semibold text-slate-900 dark:text-white block">{title}</span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1">Collection</label>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Collection</label>
                   <select
                     aria-label={`${title} collection`}
                     value={state.collection_id}
@@ -111,7 +111,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1">Metric</label>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Metric</label>
                   <select
                     aria-label={`${title} metric`}
                     value={state.metric}
@@ -127,7 +127,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1">Top-K</label>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Top-K</label>
                   <input
                     type="number"
                     min={1}
@@ -146,7 +146,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs disabled:opacity-50"
+            className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs disabled:opacity-50"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>{loading ? 'Comparing...' : 'Compare Retrieval Results'}</span>
@@ -158,25 +158,25 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Shared Chunks</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Shared Chunks</span>
               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                 {compareResult.overlap_count}
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Jaccard Overlap</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Jaccard Overlap</span>
               <p className="text-2xl font-bold text-brand-500 mt-1 font-mono">
                 {(compareResult.jaccard_overlap * 100).toFixed(1)}%
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Strategy A Hits</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Strategy A Hits</span>
               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                 {compareResult.run_a.results.length}
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Strategy B Hits</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Strategy B Hits</span>
               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                 {compareResult.run_b.results.length}
               </p>

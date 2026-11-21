@@ -15,7 +15,7 @@ export const EmbeddingPointInspector: React.FC<EmbeddingPointInspectorProps> = (
 }) => {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center justify-center h-96 space-y-2 text-xs text-slate-500">
+      <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center justify-center h-96 space-y-2 text-xs text-slate-600 dark:text-slate-400">
         <Loader2 className="w-5 h-5 text-brand-500 animate-spin" />
         <span>Computing exact high-dimensional neighbors...</span>
       </div>
@@ -79,19 +79,19 @@ export const EmbeddingPointInspector: React.FC<EmbeddingPointInspectorProps> = (
 
         <div className="grid grid-cols-2 gap-2 text-xs font-mono">
           <div className="p-2 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-            <span className="text-[10px] text-slate-500 block">L2 Norm</span>
+            <span className="text-[10px] text-slate-600 dark:text-slate-400 block">L2 Norm</span>
             <span className="text-slate-900 dark:text-white">{inspection.vector_norm}</span>
           </div>
           <div className="p-2 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-            <span className="text-[10px] text-slate-500 block">Mean</span>
+            <span className="text-[10px] text-slate-600 dark:text-slate-400 block">Mean</span>
             <span className="text-slate-900 dark:text-white">{inspection.vector_mean}</span>
           </div>
           <div className="p-2 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-            <span className="text-[10px] text-slate-500 block">Min Value</span>
+            <span className="text-[10px] text-slate-600 dark:text-slate-400 block">Min Value</span>
             <span className="text-slate-900 dark:text-white">{inspection.vector_min}</span>
           </div>
           <div className="p-2 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-            <span className="text-[10px] text-slate-500 block">Max Value</span>
+            <span className="text-[10px] text-slate-600 dark:text-slate-400 block">Max Value</span>
             <span className="text-slate-900 dark:text-white">{inspection.vector_max}</span>
           </div>
         </div>
@@ -133,7 +133,7 @@ export const EmbeddingPointInspector: React.FC<EmbeddingPointInspectorProps> = (
                   cos: {n.cosine_similarity.toFixed(4)}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-500">
+              <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
                 <span className="truncate">{n.snippet}</span>
                 <span className="font-mono shrink-0 ml-2">
                   L2: {n.euclidean_distance.toFixed(3)}

@@ -35,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center font-bold text-slate-950 text-lg shadow-sm shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-emerald-500 flex items-center justify-center font-bold text-white text-lg shadow-sm shrink-0">
           X
         </div>
         <div className="min-w-0">

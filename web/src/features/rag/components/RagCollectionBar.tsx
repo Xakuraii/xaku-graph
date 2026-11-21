@@ -168,7 +168,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
           <button
             type="button"
             onClick={onToggleSandboxBuilder}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs transition-colors"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{showSandboxBuilder ? 'Close Chunker' : 'New Chunk Sandbox'}</span>
@@ -198,7 +198,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
                     className={`px-2 py-0.5 rounded border font-mono ${
                       c.available
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700'
                     }`}
                   >
                     {c.connector_type}: {c.available ? 'ready' : 'install .[rag]'}
@@ -209,7 +209,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Database Engine</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Database Engine</label>
               <select
                 aria-label="External DB engine"
                 value={extType}
@@ -228,7 +228,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
                 Local Persist Path (optional)
               </label>
               <input
@@ -241,7 +241,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Host (if HTTP)</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Host (if HTTP)</label>
               <input
                 type="text"
                 disabled={extPath.trim().length > 0}
@@ -252,7 +252,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Port</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Port</label>
               <input
                 type="number"
                 disabled={extPath.trim().length > 0}
@@ -263,7 +263,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Collection Name *</label>
+              <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Collection Name *</label>
               <input
                 type="text"
                 required
@@ -277,7 +277,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
 
           {discovered.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-              <span className="text-slate-500">Discovered Collections:</span>
+              <span className="text-slate-600 dark:text-slate-400">Discovered Collections:</span>
               {discovered.map((col) => (
                 <button
                   key={col.id}
@@ -328,7 +328,7 @@ export const RagCollectionBar: React.FC<RagCollectionBarProps> = ({
             </button>
             <button
               type="submit"
-              className="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs"
+              className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs"
             >
               Inspect Read-Only
             </button>

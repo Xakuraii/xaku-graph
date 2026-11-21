@@ -28,8 +28,8 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     const el = containerRef.current;
     if (!el) return;
 
-    const textColor = isDark ? '#cbd5e1' : '#334155';
-    const gridColor = isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(100, 116, 139, 0.18)';
+    const textColor = isDark ? '#f1f5f9' : '#1e293b';
+    const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.18)';
 
     const { xaxis, yaxis, margin, ...restLayout } = layout;
 
