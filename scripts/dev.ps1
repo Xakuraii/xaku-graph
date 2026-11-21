@@ -16,6 +16,26 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = (Get-Item $PSScriptRoot).Parent.FullName
 Set-Location $ProjectRoot
 
+function Test-TcpPort {
+    param(
+        [string]$TargetHost,
+        [int]$Port,
+        [int]$TimeoutMs = 250
+    )
+    $probe = New-Object System.Net.Sockets.TcpClient
+    try {
+        $async = $probe.BeginConnect($TargetHost, $Port, $null, $null)
+        if ($async.AsyncWaitHandle.WaitOne($TimeoutMs, $false) -and $probe.Connected) {
+            return $true
+        }
+        return $false
+    } catch {
+        return $false
+    } finally {
+        $probe.Close()
+    }
+}
+
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "  Starting XakuGraph Local-First Development Studio" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
@@ -83,56 +103,88 @@ if ($LaunchDesktop -and ($Rebuild -or -not (Test-Path $DesktopDebugExe))) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-# 5. Start Local Processes
-Write-Host "`n[1/3] Starting FastAPI Backend on http://127.0.0.1:8000 ..." -ForegroundColor Green
-$BackendJob = Start-Process -FilePath $VenvPython -ArgumentList "-m", "uvicorn", "app.main:app", "--reload", "--host", "127.0.0.1", "--port", "8000" -WorkingDirectory $BackendDir -PassThru
-
-Write-Host "[2/3] Starting Vite Frontend on http://localhost:5173 ..." -ForegroundColor Green
-$FrontendJob = Start-Process -FilePath "npm.cmd" -ArgumentList "run", "dev" -WorkingDirectory $WebDir -PassThru
-
+$BackendJob = $null
+$FrontendJob = $null
 $DesktopJob = $null
-if ($LaunchDesktop) {
-    # Wait briefly for Vite dev server so the desktop window loads on first paint
-    $deadline = (Get-Date).AddSeconds(20)
-    while ((Get-Date) -lt $deadline) {
-        if ($FrontendJob.HasExited) { break }
-        try {
-            $probe = New-Object System.Net.Sockets.TcpClient
-            $async = $probe.BeginConnect("localhost", 5173, $null, $null)
-            if ($async.AsyncWaitHandle.WaitOne(250, $false) -and $probe.Connected) {
-                $probe.Close()
-                break
-            }
-            $probe.Close()
-        } catch {
-            # Ignore while Vite is still binding port 5173
-        }
-        Start-Sleep -Milliseconds 200
-    }
-
-    Write-Host "[3/3] Launching XakuGraph Desktop App ($DesktopDebugExe)..." -ForegroundColor Green
-    $DesktopJob = Start-Process -FilePath $DesktopDebugExe -WorkingDirectory $ProjectRoot -PassThru
-}
-
-Write-Host "`n==========================================================" -ForegroundColor Cyan
-Write-Host "  XakuGraph is live:" -ForegroundColor Green
-if ($LaunchDesktop) {
-    Write-Host "  - Desktop App:   XakuGraph Native Window (Tauri 2)" -ForegroundColor White
-}
-Write-Host "  - Web Studio:    http://localhost:5173" -ForegroundColor White
-Write-Host "  - Backend API:   http://127.0.0.1:8000" -ForegroundColor White
-Write-Host "  - OpenAPI Docs:  http://127.0.0.1:8000/docs" -ForegroundColor White
-Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "Close the desktop window or press [Ctrl+C] to stop all services.`n" -ForegroundColor Yellow
 
 try {
+    # 5. Start or Reuse FastAPI Backend
+    if (Test-TcpPort -TargetHost "127.0.0.1" -Port 8000) {
+        try {
+            $health = Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/health" -TimeoutSec 2
+            if ($health.status -eq "healthy") {
+                Write-Host "`n[1/3] Reusing running XakuGraph Backend on http://127.0.0.1:8000 (v$($health.version))." -ForegroundColor Green
+            } else {
+                Write-Error "Port 8000 is already in use by another process. Stop it and retry."
+                exit 1
+            }
+        } catch {
+            Write-Error "Port 8000 is already in use by a non-XakuGraph process. Stop that process and retry."
+            exit 1
+        }
+    } else {
+        Write-Host "`n[1/3] Starting FastAPI Backend on http://127.0.0.1:8000 ..." -ForegroundColor Green
+        $BackendJob = Start-Process -FilePath $VenvPython -ArgumentList "-m", "uvicorn", "app.main:app", "--reload", "--host", "127.0.0.1", "--port", "8000" -WorkingDirectory $BackendDir -NoNewWindow -PassThru
+    }
+
+    # 6. Start or Reuse Vite Frontend
+    if (Test-TcpPort -TargetHost "localhost" -Port 5173) {
+        Write-Host "[2/3] Reusing running Vite Frontend on http://localhost:5173 ." -ForegroundColor Green
+    } else {
+        Write-Host "[2/3] Starting Vite Frontend on http://localhost:5173 ..." -ForegroundColor Green
+        $FrontendJob = Start-Process -FilePath "npm.cmd" -ArgumentList "run", "dev" -WorkingDirectory $WebDir -NoNewWindow -PassThru
+    }
+
+    # 7. Wait briefly for Backend & Frontend readiness before opening Desktop
+    if ($BackendJob) {
+        $backendDeadline = (Get-Date).AddSeconds(15)
+        while ((Get-Date) -lt $backendDeadline) {
+            if ($BackendJob.HasExited) { break }
+            if (Test-TcpPort -TargetHost "127.0.0.1" -Port 8000) { break }
+            Start-Sleep -Milliseconds 200
+        }
+        if ($BackendJob.HasExited) {
+            Write-Error "FastAPI backend failed to start (exit code $($BackendJob.ExitCode))."
+            exit 1
+        }
+    }
+
+    if ($LaunchDesktop) {
+        if ($FrontendJob) {
+            $viteDeadline = (Get-Date).AddSeconds(20)
+            while ((Get-Date) -lt $viteDeadline) {
+                if ($FrontendJob.HasExited) { break }
+                if (Test-TcpPort -TargetHost "localhost" -Port 5173) { break }
+                Start-Sleep -Milliseconds 200
+            }
+            if ($FrontendJob.HasExited) {
+                Write-Error "Vite frontend failed to start (exit code $($FrontendJob.ExitCode))."
+                exit 1
+            }
+        }
+
+        Write-Host "[3/3] Launching XakuGraph Desktop App ($DesktopDebugExe)..." -ForegroundColor Green
+        $DesktopJob = Start-Process -FilePath $DesktopDebugExe -WorkingDirectory $ProjectRoot -PassThru
+    }
+
+    Write-Host "`n==========================================================" -ForegroundColor Cyan
+    Write-Host "  XakuGraph is live:" -ForegroundColor Green
+    if ($LaunchDesktop) {
+        Write-Host "  - Desktop App:   XakuGraph Native Window (Tauri 2)" -ForegroundColor White
+    }
+    Write-Host "  - Web Studio:    http://localhost:5173" -ForegroundColor White
+    Write-Host "  - Backend API:   http://127.0.0.1:8000" -ForegroundColor White
+    Write-Host "  - OpenAPI Docs:  http://127.0.0.1:8000/docs" -ForegroundColor White
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "Close the desktop window or press [Ctrl+C] to stop all services.`n" -ForegroundColor Yellow
+
     while ($true) {
         Start-Sleep -Seconds 1
-        if ($BackendJob.HasExited) {
+        if ($BackendJob -and $BackendJob.HasExited) {
             Write-Warning "Backend process terminated."
             break
         }
-        if ($FrontendJob.HasExited) {
+        if ($FrontendJob -and $FrontendJob.HasExited) {
             Write-Warning "Frontend process terminated."
             break
         }

@@ -27,6 +27,12 @@ for arg in "$@"; do
     esac
 done
 
+port_listening() {
+    local host="$1"
+    local port="$2"
+    (echo >/dev/tcp/"$host"/"$port") >/dev/null 2>&1
+}
+
 echo "=== Starting XakuGraph Local-First Development Studio ==="
 
 # Check Python and Node
@@ -75,20 +81,37 @@ if [ "$LAUNCH_DESKTOP" = true ] && { [ "$REBUILD_DESKTOP" = true ] || [ ! -x "$D
     cargo build -p xakugraph-desktop
 fi
 
-# Cleanup on exit
-trap 'echo "Stopping servers..."; kill 0' EXIT
+# Cleanup only processes started by this script
+PIDS=()
+cleanup() {
+    echo "Stopping servers..."
+    for pid in "${PIDS[@]:-}"; do
+        kill "$pid" 2>/dev/null || true
+    done
+}
+trap cleanup EXIT
 
-# Start backend and frontend servers
-echo "[1/3] Starting FastAPI backend on http://127.0.0.1:8000 ..."
-(cd "$BACKEND_DIR" && "$VENV_DIR/bin/python" -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000) &
+# Start or reuse backend server
+if port_listening 127.0.0.1 8000; then
+    echo "[1/3] Reusing running backend on http://127.0.0.1:8000 ."
+else
+    echo "[1/3] Starting FastAPI backend on http://127.0.0.1:8000 ..."
+    (cd "$BACKEND_DIR" && "$VENV_DIR/bin/python" -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000) &
+    PIDS+=("$!")
+fi
 
-echo "[2/3] Starting Vite frontend on http://localhost:5173 ..."
-(cd "$WEB_DIR" && npm run dev) &
+# Start or reuse frontend server
+if port_listening 127.0.0.1 5173; then
+    echo "[2/3] Reusing running Vite frontend on http://localhost:5173 ."
+else
+    echo "[2/3] Starting Vite frontend on http://localhost:5173 ..."
+    (cd "$WEB_DIR" && npm run dev) &
+    PIDS+=("$!")
+fi
 
 if [ "$LAUNCH_DESKTOP" = true ]; then
-    # Wait briefly for Vite dev server
     for _ in $(seq 1 40); do
-        if (echo >/dev/tcp/127.0.0.1/5173) >/dev/null 2>&1; then
+        if port_listening 127.0.0.1 5173; then
             break
         fi
         sleep 0.25
