@@ -6,8 +6,12 @@ import { DatasetExplorer } from '../features/datasets/DatasetExplorer';
 import { VectorExplorer } from '../features/vectors/VectorExplorer';
 import { EmbeddingExplorer } from '../features/embeddings/EmbeddingExplorer';
 import { RagExplorer } from '../features/rag/RagExplorer';
-import { MlPlaceholder } from '../features/machine-learning/MlPlaceholder';
+import { MlExplorer } from '../features/machine-learning/MlExplorer';
 import { apiClient } from '../services/apiClient';
+import {
+  ensureDesktopBackendRunning,
+  isTauriDesktop,
+} from '../services/desktopBridge';
 import { HealthResponse } from '../types/api';
 
 function getInitialTheme(): boolean {
@@ -23,6 +27,7 @@ function getInitialTheme(): boolean {
 
 export const App: React.FC = () => {
   const [activeModule, setActiveModule] = useState<NavModuleId>('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true);
   const [isDark, setIsDark] = useState<boolean>(getInitialTheme);
@@ -35,22 +40,37 @@ export const App: React.FC = () => {
     }
   }, [isDark]);
 
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const data = await apiClient.getHealth();
-        setHealth(data);
-      } catch {
-        setHealth(null);
-      } finally {
-        setLoadingHealth(false);
+  const checkHealth = useCallback(async () => {
+    try {
+      const data = await apiClient.getHealth();
+      setHealth(data);
+    } catch {
+      if (isTauriDesktop()) {
+        try {
+          await ensureDesktopBackendRunning();
+          const data = await apiClient.getHealth();
+          setHealth(data);
+          return;
+        } catch {
+          // Backend auto-recovery failed; fall through to disconnected state
+        }
       }
-    };
+      setHealth(null);
+    } finally {
+      setLoadingHealth(false);
+    }
+  }, []);
 
+  useEffect(() => {
     void checkHealth();
     const interval = setInterval(() => void checkHealth(), 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [checkHealth]);
+
+  const handleRetryBackend = useCallback(() => {
+    setLoadingHealth(true);
+    void checkHealth();
+  }, [checkHealth]);
 
   const handleThemeChange = useCallback((nextTheme: 'light' | 'dark') => {
     const nextIsDark = nextTheme === 'dark';
@@ -80,7 +100,7 @@ export const App: React.FC = () => {
       case 'rag':
         return <RagExplorer isDark={isDark} />;
       case 'ml':
-        return <MlPlaceholder />;
+        return <MlExplorer isDark={isDark} />;
       default:
         return (
           <StudioOverview
@@ -98,8 +118,16 @@ export const App: React.FC = () => {
         loading={loadingHealth}
         isDark={isDark}
         onThemeChange={handleThemeChange}
+        mobileMenuOpen={mobileMenuOpen}
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+        onRetryBackend={isTauriDesktop() ? handleRetryBackend : undefined}
       />
-      <AppLayout activeModule={activeModule} onSelectModule={setActiveModule}>
+      <AppLayout
+        activeModule={activeModule}
+        onSelectModule={setActiveModule}
+        mobileMenuOpen={mobileMenuOpen}
+        onCloseMobileMenu={() => setMobileMenuOpen(false)}
+      >
         {renderModuleContent()}
       </AppLayout>
     </div>

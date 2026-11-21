@@ -51,7 +51,7 @@ export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = ({ isDark = t
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Embedding Visualization
             </h1>
-            <StatusBadge status="live" label="Phase 3 Active" />
+            <StatusBadge status="live" label="Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Inspect text and image embeddings using PCA, t-SNE, or UMAP projections with K-Means
@@ -130,6 +130,7 @@ export const EmbeddingExplorer: React.FC<EmbeddingExplorerProps> = ({ isDark = t
               projection={projection}
               colorBy={colorBy}
               selectedPointIndex={selectedPointIndex}
+              highlightNeighborIndices={pointInspection?.neighbors.map((n) => n.index) ?? []}
               loading={loadingProjection}
               isDark={isDark}
               onSelectPoint={(idx) => void inspectPoint(idx)}

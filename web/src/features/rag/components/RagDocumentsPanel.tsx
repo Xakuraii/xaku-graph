@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Binary, FileText, Layers, Search } from 'lucide-react';
+import { BarChart3, Binary, FileText, Layers, Search } from 'lucide-react';
+import { Data } from 'plotly.js-dist-min';
 import { RagCollectionInspectResponse } from '../../../types/api';
+import { PlotlyChart } from '../../../components/charts/PlotlyChart';
 
 interface RagDocumentsPanelProps {
   inspection: RagCollectionInspectResponse | null;
   selectedDocId: string;
   chunkSearch: string;
   loading: boolean;
+  isDark?: boolean;
   onSelectDoc: (docId: string) => void;
   onChangeChunkSearch: (search: string) => void;
 }
@@ -16,6 +19,7 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
   selectedDocId,
   chunkSearch,
   loading,
+  isDark = true,
   onSelectDoc,
   onChangeChunkSearch,
 }) => {
@@ -23,7 +27,7 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
 
   if (loading && !inspection) {
     return (
-      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-500">
+      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400">
         Loading documents and chunks...
       </div>
     );
@@ -31,11 +35,24 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
 
   if (!inspection) {
     return (
-      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
         No RAG collection loaded.
       </div>
     );
   }
+
+  const chunkLenChartData: Data[] =
+    inspection.chunks.length > 0
+      ? [
+          {
+            type: 'bar',
+            name: 'Chunk Length (chars)',
+            x: inspection.chunks.map((c) => `#${c.chunk_index} ${c.doc_title.slice(0, 14)}`),
+            y: inspection.chunks.map((c) => c.char_count),
+            marker: { color: '#38bdf8' },
+          },
+        ]
+      : [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -79,7 +96,7 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
                 <div className="font-semibold text-slate-900 dark:text-white truncate">
                   {doc.title}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400 font-mono">
                   <span className="truncate">{doc.source}</span>
                   <span className="shrink-0 ml-2">{doc.chunk_count} chunks</span>
                 </div>
@@ -103,14 +120,35 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
               className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
-          <span className="text-xs font-mono text-slate-500 shrink-0">
+          <span className="text-xs font-mono text-slate-600 dark:text-slate-400 shrink-0">
             {inspection.chunks.length} / {inspection.total_chunks} chunks
           </span>
         </div>
 
+        {chunkLenChartData.length > 0 && (
+          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-1.5">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-sky-500" />
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                Chunk Size Balance (Characters per Chunk)
+              </h3>
+            </div>
+            <PlotlyChart
+              data={chunkLenChartData}
+              isDark={isDark}
+              testId="rag-chunk-stats-chart"
+              className="w-full h-44"
+              layout={{
+                margin: { l: 44, r: 16, t: 10, b: 36 },
+                yaxis: { title: { text: 'Characters' } },
+              }}
+            />
+          </div>
+        )}
+
         <div className="space-y-3">
           {inspection.chunks.length === 0 ? (
-            <div className="p-8 text-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-500">
+            <div className="p-8 text-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400">
               No chunks match the current document or search filter.
             </div>
           ) : (
@@ -131,7 +169,7 @@ export const RagDocumentsPanel: React.FC<RagDocumentsPanelProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-500">
+                    <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-600 dark:text-slate-400">
                       <span>{chunk.char_count} chars</span>
                       {chunk.char_start !== null && chunk.char_start !== undefined && (
                         <span>

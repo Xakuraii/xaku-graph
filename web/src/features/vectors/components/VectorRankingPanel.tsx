@@ -1,6 +1,8 @@
-import React from 'react';
-import { ListOrdered, Search, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart3, ListOrdered, Search, ShieldCheck } from 'lucide-react';
+import { Data } from 'plotly.js-dist-min';
 import { DistanceMetric, VectorSearchResponse } from '../../../types/api';
+import { PlotlyChart } from '../../../components/charts/PlotlyChart';
 
 interface VectorRankingPanelProps {
   queryStr: string;
@@ -8,6 +10,7 @@ interface VectorRankingPanelProps {
   metric: DistanceMetric;
   searchResult: VectorSearchResponse | null;
   loading: boolean;
+  isDark?: boolean;
   onChangeQuery: (val: string) => void;
   onChangeCandidates: (val: string) => void;
   onChangeMetric: (m: DistanceMetric) => void;
@@ -27,11 +30,56 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
   metric,
   searchResult,
   loading,
+  isDark = true,
   onChangeQuery,
   onChangeCandidates,
   onChangeMetric,
   onSearch,
 }) => {
+  const [chartMode, setChartMode] = useState<'bar' | 'profile'>('bar');
+  const reversed = searchResult ? [...searchResult.results].reverse() : [];
+  const rankChartData: Data[] = searchResult
+    ? chartMode === 'profile'
+      ? [
+          {
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Cosine Sim',
+            x: searchResult.results.map((r) => r.label),
+            y: searchResult.results.map((r) => r.cosine_similarity),
+            line: { color: '#22c55e', width: 2 },
+          },
+          {
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Euclidean L2',
+            x: searchResult.results.map((r) => r.label),
+            y: searchResult.results.map((r) => r.euclidean_distance),
+            line: { color: '#38bdf8', width: 2 },
+          },
+          {
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Dot Product',
+            x: searchResult.results.map((r) => r.label),
+            y: searchResult.results.map((r) => r.dot_product),
+            line: { color: '#a855f7', width: 2, dash: 'dot' },
+          },
+        ]
+      : [
+          {
+            type: 'bar',
+            orientation: 'h',
+            y: reversed.map((r) => `#${r.rank} ${r.label}`),
+            x: reversed.map((r) => r.score),
+            text: reversed.map((r) => r.score.toFixed(4)),
+            textposition: 'auto',
+            marker: { color: '#22c55e' },
+            name: searchResult.metric,
+          },
+        ]
+    : [];
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -98,7 +146,7 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
           type="button"
           onClick={onSearch}
           disabled={loading}
-          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-sm transition-colors disabled:opacity-50"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-colors disabled:opacity-50"
         >
           <Search className="w-4 h-4" />
           <span>{loading ? 'Ranking...' : 'Rank Nearest Neighbors'}</span>
@@ -106,7 +154,65 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
       </div>
 
       {searchResult && (
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="space-y-6">
+          {searchResult.results.length > 0 && (
+            <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <BarChart3 className="w-4 h-4 text-brand-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    {chartMode === 'profile'
+                      ? 'Multi-Metric Comparison Across Candidates'
+                      : `Candidate Ranking Score Comparison (${searchResult.metric})`}
+                  </h3>
+                </div>
+                <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setChartMode('bar')}
+                    className={`px-2 py-0.5 rounded ${
+                      chartMode === 'bar'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Score Bar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartMode('profile')}
+                    className={`px-2 py-0.5 rounded ${
+                      chartMode === 'profile'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Multi-Metric
+                  </button>
+                </div>
+              </div>
+              <PlotlyChart
+                data={rankChartData}
+                isDark={isDark}
+                testId="vector-ranking-chart"
+                className="w-full h-64"
+                layout={
+                  chartMode === 'profile'
+                    ? {
+                        xaxis: { tickangle: -15 },
+                        yaxis: { title: { text: 'Metric Value' } },
+                        legend: { orientation: 'h', y: 1.15 },
+                      }
+                    : {
+                        margin: { l: 110, r: 24, t: 12, b: 36 },
+                        xaxis: { title: { text: searchResult.metric } },
+                      }
+                }
+              />
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
               <ListOrdered className="w-4 h-4 text-brand-500" />
@@ -148,6 +254,7 @@ export const VectorRankingPanel: React.FC<VectorRankingPanelProps> = ({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         </div>
       )}

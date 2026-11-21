@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "XakuGraph Backend Engine"
-    VERSION: str = "0.1.0"
+    VERSION: str = "1.0.0"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
@@ -18,6 +18,8 @@ class Settings(BaseSettings):
         "http://localhost:4173",
         "http://127.0.0.1:4173",
         "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost",
     ]
 
     # Storage paths relative to project root or configured via env
@@ -27,6 +29,7 @@ class Settings(BaseSettings):
     CACHE_DIR: Path = DATA_DIR / "cache"
     EMBEDDING_CACHE_DIR: Path = CACHE_DIR / "embeddings"
     RAG_CACHE_DIR: Path = CACHE_DIR / "rag"
+    ML_CACHE_DIR: Path = CACHE_DIR / "ml"
     SAMPLES_DIR: Path = DATA_DIR / "samples"
     SQLITE_DB_PATH: Path = DATA_DIR / "xakugraph.db"
 
@@ -63,6 +66,7 @@ class Settings(BaseSettings):
             self.CACHE_DIR,
             self.EMBEDDING_CACHE_DIR,
             self.RAG_CACHE_DIR,
+            self.ML_CACHE_DIR,
         ):
             directory.mkdir(parents=True, exist_ok=True)
 

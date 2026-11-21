@@ -105,6 +105,7 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
     await waitFor(() => {
       expect(screen.getByText('0.99388')).toBeInTheDocument();
       expect(screen.getByText('6.34°')).toBeInTheDocument();
+      expect(screen.getByTestId('vector-angle-chart')).toBeInTheDocument();
       expect(screen.getByTestId('vector-component-chart')).toBeInTheDocument();
     });
   });
@@ -118,6 +119,7 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
     await waitFor(() => {
       expect(screen.getByText('Neural Search')).toBeInTheDocument();
       expect(screen.getByText('Original 4D Coordinates')).toBeInTheDocument();
+      expect(screen.getByTestId('vector-ranking-chart')).toBeInTheDocument();
     });
   });
 
@@ -131,6 +133,21 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
       expect(screen.getByTestId('vector-matrix-heatmap')).toBeInTheDocument();
       expect(screen.getByTestId('vector-space-plot')).toBeInTheDocument();
       expect(screen.getByText('PCA 2D Visual Projection')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /^3D$/i }));
+    expect(screen.getByText('3D Vector Space View')).toBeInTheDocument();
+  });
+
+  it('supports JSON array vector inputs', async () => {
+    render(<VectorExplorer isDark={true} />);
+    const textareas = screen.getAllByPlaceholderText(/e\.g\./i);
+    fireEvent.change(textareas[0], { target: { value: '[1, 2, 3, 4]' } });
+    fireEvent.change(textareas[1], { target: { value: '[2, 3, 4, 5]' } });
+
+    fireEvent.click(screen.getByText('Calculate Similarity & Distance'));
+    await waitFor(() => {
+      expect(screen.getByText('0.99388')).toBeInTheDocument();
     });
   });
 });

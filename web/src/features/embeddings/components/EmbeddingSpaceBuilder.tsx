@@ -67,23 +67,46 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'text') {
-      const lines = rawTextLines
-        .split('\n')
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
-      if (lines.length < 2) return;
+      const trimmed = rawTextLines.trim();
+      if (!trimmed) return;
 
-      const items = lines.map((line, idx) => {
-        const parts = line.split('|').map((p) => p.trim());
-        if (parts.length >= 2) {
-          return {
-            label: parts[0] || `Item ${idx + 1}`,
-            text: parts[1],
-            metadata: parts[2] ? { category: parts[2] } : {},
-          };
+      let items: { label: string; text: string; metadata: Record<string, unknown> }[] = [];
+      if (trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed) as Array<Record<string, unknown> | string>;
+          items = parsed.map((entry, idx) => {
+            if (typeof entry === 'string') {
+              return { label: `Item ${idx + 1}`, text: entry, metadata: {} };
+            }
+            const label = String(entry.label ?? entry.title ?? `Item ${idx + 1}`);
+            const text = String(entry.text ?? entry.content ?? '');
+            const { label: _l, title: _t, text: _tx, content: _c, ...rest } = entry;
+            return { label, text, metadata: rest };
+          });
+        } catch {
+          return;
         }
-        return { label: `Item ${idx + 1}`, text: line, metadata: {} };
-      });
+      } else {
+        const lines = trimmed
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
+        if (lines.length < 2) return;
+
+        items = lines.map((line, idx) => {
+          const parts = line.split('|').map((p) => p.trim());
+          if (parts.length >= 2) {
+            return {
+              label: parts[0] || `Item ${idx + 1}`,
+              text: parts[1],
+              metadata: parts[2] ? { category: parts[2] } : {},
+            };
+          }
+          return { label: `Item ${idx + 1}`, text: line, metadata: {} };
+        });
+      }
+
+      if (items.length < 2) return;
 
       const res = await onCreateText({
         name: spaceName.trim() || 'Custom Text Embeddings',
@@ -131,8 +154,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             onClick={() => setMode('text')}
             className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${
               mode === 'text'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -143,8 +166,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             onClick={() => setMode('dataset')}
             className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${
               mode === 'dataset'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <Database className="w-3.5 h-3.5" />
@@ -155,8 +178,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             onClick={() => setMode('image')}
             className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${
               mode === 'image'
-                ? 'bg-brand-600 text-slate-950 font-semibold'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'bg-brand-600 text-white font-semibold'
+                : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             <ImageIcon className="w-3.5 h-3.5" />
@@ -218,7 +241,8 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
       {mode === 'text' && (
         <div>
           <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-            Items (one per line; optional <code>Label | Text | Category</code> format)
+            Items (one per line: <code>Label | Text | Category</code>, or paste JSON array{' '}
+            <code>[{`{"label": "...", "text": "..."}`}]</code>)
           </label>
           <textarea
             rows={5}
@@ -293,7 +317,7 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
             multiple
             accept=".png,.jpg,.jpeg,.webp,.bmp"
             onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
-            className="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-800 dark:file:text-slate-200"
+            className="block w-full text-xs text-slate-600 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-800 dark:file:text-slate-200"
           />
           {imageFiles.length > 0 && (
             <p className="text-[11px] text-slate-400 mt-1">
@@ -314,7 +338,7 @@ export const EmbeddingSpaceBuilder: React.FC<EmbeddingSpaceBuilderProps> = ({
         <button
           type="submit"
           disabled={creating || (mode === 'image' && imageFiles.length < 2)}
-          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs disabled:opacity-50"
+          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs disabled:opacity-50"
         >
           {creating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           <span>{creating ? 'Generating Embeddings...' : 'Generate & Project'}</span>

@@ -56,7 +56,7 @@ export const VectorExplorer: React.FC<VectorExplorerProps> = ({ isDark = true })
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Vector & Similarity Explorer
             </h1>
-            <StatusBadge status="live" label="Phase 4 Active" />
+            <StatusBadge status="live" label="Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Explore mathematical vector properties, normalization, pairwise metrics, and
@@ -135,6 +135,7 @@ export const VectorExplorer: React.FC<VectorExplorerProps> = ({ isDark = true })
           metric={metric}
           searchResult={searchResult}
           loading={loading}
+          isDark={isDark}
           onChangeQuery={setQueryStr}
           onChangeCandidates={setCandidateLines}
           onChangeMetric={setMetric}

@@ -2,6 +2,30 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [1.0.0] - Stable Release
+
+### Changed
+- Bumped workspace version to `1.0.0` across `backend/`, `web/`, `crates/xakugraph-core/`, `desktop/src-tauri/`, and `Header` UI badges.
+- Configured the Tauri desktop shell window to launch maximized by default (`maximized: true` in `desktop/src-tauri/tauri.conf.json`).
+- Updated `scripts/dev.ps1` and `scripts/dev.sh` to launch FastAPI, Vite Web Studio, and the existing debug desktop executable directly without rebuilding on every start.
+
+## [0.7.0] - Phase 7 Desktop Application (Tauri 2)
+
+### Added
+- Windows Tauri 2 backend lifecycle manager (`desktop/src-tauri/src/backend_manager.rs`) with automatic packaged FastAPI startup (`CREATE_NO_WINDOW`), port `8000` reuse detection, exit shutdown cleanup, and Tauri IPC commands (`get_core_version`, `get_desktop_runtime_info`, `ensure_backend_running`, `compute_vector_similarity_native`).
+- Backend CORS allowlist support for Tauri WebView2 origins (`http://tauri.localhost`, `https://tauri.localhost`) in `backend/app/core/config.py`.
+- Frontend `desktopBridge` (`web/src/services/desktopBridge.ts`) and dynamic `resolveApiBase()` routing in `apiClient.ts`, plus automatic backend recovery in `App.tsx`, manual `Reconnect` action in `Header.tsx`, and Vitest coverage (`DesktopBridge.test.tsx`).
+- Updated `desktop/src-tauri/tauri.conf.json`, `scripts/dev.ps1 -Desktop`, `scripts/check.ps1`, and `scripts/test.ps1` to verify both `xakugraph-core` and `xakugraph-desktop`.
+- Desktop shell architecture guide (`docs/architecture/desktop-shell.md`) and `ADR-0008`.
+
+## [0.6.0] - Phase 6 ML Visualization
+
+### Added
+- `MlService` (`backend/app/services/machine_learning/ml_service.py`) with two offline sample runs (`sample-ml-iris-classification`, `sample-ml-diabetes-regression`), local Scikit-Learn training on any uploaded dataset (`random_forest`, `gradient_boosting`, `logistic_regression`, `ridge`), validation permutation feature importance, and external JSON evaluation import persisted under `data/cache/ml/`.
+- ML REST API (`/api/ml/*`): run listing, run inspection, local training, external evaluation import, and custom run deletion.
+- Interactive React ML Visualization module (`MlExplorer`, `useMlExplorer`, `MlRunBar`, `MlRunBuilder`, `MlTrainingPanel`, `MlEvaluationPanel`, `MlExplainabilityPanel`) supporting training/validation loss & score curves, raw/normalized confusion matrix heatmaps, per-class precision/recall/F1 charts, regression Predicted vs Actual + Residual plots, feature importance comparison, and filterable misclassification error drilling.
+- ADR-0007 and ML API documentation (`docs/api/ml.md`), completing all 5 core XakuGraph studio modules.
+
 ## [0.5.0] - Phase 5 RAG Visualization
 
 ### Added

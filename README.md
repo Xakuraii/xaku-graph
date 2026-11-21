@@ -54,13 +54,14 @@ XakuGraph/
 - **Rust & Cargo** (>= 1.80)
 
 ### 1. Launch Local Development Studio
-Run the automated PowerShell launcher. It verifies prerequisites, sets up virtual environments, installs dependencies, and boots both the FastAPI backend and Vite frontend concurrently:
+Run the automated PowerShell launcher. It verifies prerequisites, sets up virtual environments, installs dependencies, and boots the FastAPI backend, Vite frontend, and Tauri desktop window concurrently (pass `-WebOnly` to skip launching the desktop window):
 
 ```powershell
 ./scripts/dev.ps1
 ```
 
 Once running, access:
+- **Desktop App:** Native XakuGraph window (Tauri 2)
 - **Web Studio:** [http://localhost:5173](http://localhost:5173)
 - **Backend API:** [http://127.0.0.1:8000](http://127.0.0.1:8000)
 - **Interactive OpenAPI Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)

@@ -13,7 +13,7 @@ beforeEach(() => {
           json: () =>
             Promise.resolve({
               status: 'healthy',
-              version: '0.1.0',
+              version: '1.0.0',
               environment: 'test',
               timestamp: new Date().toISOString(),
               modules: {},
@@ -150,5 +150,25 @@ describe('XakuGraph App Foundation', () => {
       expect(document.documentElement.classList.contains('dark')).toBe(true);
       expect(localStorage.getItem('theme')).toBe('dark');
     });
+  });
+
+  it('omits sidebar platform/storage & phase status text and opens mobile hamburger menu', async () => {
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText('XakuGraph')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Studio Status')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Local Parquet & SQLite/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Phase 6/i)).not.toBeInTheDocument();
+
+    const menuBtn = screen.getByRole('button', { name: /Toggle navigation menu/i });
+    fireEvent.click(menuBtn);
+    expect(screen.getByRole('dialog', { name: /Mobile navigation menu/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Close navigation menu/i }));
+    expect(
+      screen.queryByRole('dialog', { name: /Mobile navigation menu/i })
+    ).not.toBeInTheDocument();
   });
 });

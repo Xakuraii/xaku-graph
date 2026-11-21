@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GitCompare, Play } from 'lucide-react';
 import { Data } from 'plotly.js-dist-min';
 import {
@@ -36,26 +36,76 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
   onChangeStrategyB,
   onCompare,
 }) => {
+  const [mainChartView, setMainChartView] = useState<'scores' | 'ranks'>('scores');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onCompare();
   };
 
+  const sharedItems = compareResult
+    ? compareResult.comparison_items.filter(
+        (i) => i.rank_a !== null && i.rank_a !== undefined && i.rank_b !== null && i.rank_b !== undefined
+      )
+    : [];
+
   const compareChartData: Data[] = compareResult
+    ? mainChartView === 'ranks'
+      ? [
+          {
+            type: 'scatter',
+            mode: 'markers+text',
+            name: 'Shared Chunks',
+            x: sharedItems.map((i) => i.rank_a as number),
+            y: sharedItems.map((i) => i.rank_b as number),
+            text: sharedItems.map((i) => `#${i.chunk_index}`),
+            textposition: 'top center',
+            hovertext: sharedItems.map(
+              (i) => `${i.doc_title} (#${i.chunk_index})<br>Rank A: ${i.rank_a}, Rank B: ${i.rank_b}`
+            ),
+            hoverinfo: 'text',
+            marker: { size: 11, color: '#22c55e' },
+          },
+          {
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Identical Rank (y = x)',
+            x: [1, Math.max(strategyA.top_k, strategyB.top_k, 1)],
+            y: [1, Math.max(strategyA.top_k, strategyB.top_k, 1)],
+            line: { color: '#94a3b8', dash: 'dot', width: 1.5 },
+          },
+        ]
+      : [
+          {
+            type: 'bar',
+            name: strategyA.label,
+            x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
+            y: compareResult.comparison_items.map((i) => i.score_a ?? 0),
+            marker: { color: '#22c55e' },
+          },
+          {
+            type: 'bar',
+            name: strategyB.label,
+            x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
+            y: compareResult.comparison_items.map((i) => i.score_b ?? 0),
+            marker: { color: '#38bdf8' },
+          },
+        ]
+    : [];
+
+  const overlapChartData: Data[] = compareResult
     ? [
         {
-          type: 'bar',
-          name: strategyA.label,
-          x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
-          y: compareResult.comparison_items.map((i) => i.score_a ?? 0),
-          marker: { color: '#22c55e' },
-        },
-        {
-          type: 'bar',
-          name: strategyB.label,
-          x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
-          y: compareResult.comparison_items.map((i) => i.score_b ?? 0),
-          marker: { color: '#38bdf8' },
+          type: 'pie',
+          labels: ['Both Strategies', 'Only Strategy A', 'Only Strategy B'],
+          values: [
+            compareResult.comparison_items.filter((i) => i.status === 'both').length,
+            compareResult.comparison_items.filter((i) => i.status === 'only_a').length,
+            compareResult.comparison_items.filter((i) => i.status === 'only_b').length,
+          ],
+          hole: 0.45,
+          marker: { colors: ['#22c55e', '#f59e0b', '#38bdf8'] },
+          textinfo: 'label+value',
         },
       ]
     : [];
@@ -91,7 +141,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
               <span className="font-semibold text-slate-900 dark:text-white block">{title}</span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1">Collection</label>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Collection</label>
                   <select
                     aria-label={`${title} collection`}
                     value={state.collection_id}
@@ -111,7 +161,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1">Metric</label>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Metric</label>
                   <select
                     aria-label={`${title} metric`}
                     value={state.metric}
@@ -127,7 +177,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1">Top-K</label>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">Top-K</label>
                   <input
                     type="number"
                     min={1}
@@ -146,7 +196,7 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs disabled:opacity-50"
+            className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs disabled:opacity-50"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>{loading ? 'Comparing...' : 'Compare Retrieval Results'}</span>
@@ -158,45 +208,99 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Shared Chunks</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Shared Chunks</span>
               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                 {compareResult.overlap_count}
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Jaccard Overlap</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Jaccard Overlap</span>
               <p className="text-2xl font-bold text-brand-500 mt-1 font-mono">
                 {(compareResult.jaccard_overlap * 100).toFixed(1)}%
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Strategy A Hits</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Strategy A Hits</span>
               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                 {compareResult.run_a.results.length}
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <span className="text-xs text-slate-500">Strategy B Hits</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">Strategy B Hits</span>
               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                 {compareResult.run_b.results.length}
               </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <GitCompare className="w-4 h-4 text-brand-500" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                Score Comparison Across Retrieved Chunks
-              </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-8 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <GitCompare className="w-4 h-4 text-brand-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    {mainChartView === 'ranks'
+                      ? 'Strategy A vs Strategy B Rank Scatter'
+                      : 'Score Comparison Across Retrieved Chunks'}
+                  </h3>
+                </div>
+                <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setMainChartView('scores')}
+                    className={`px-2 py-0.5 rounded ${
+                      mainChartView === 'scores'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Score Bars
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMainChartView('ranks')}
+                    className={`px-2 py-0.5 rounded ${
+                      mainChartView === 'ranks'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Rank A vs B
+                  </button>
+                </div>
+              </div>
+              <PlotlyChart
+                data={compareChartData}
+                isDark={isDark}
+                testId="rag-compare-chart"
+                className="w-full h-72"
+                layout={
+                  mainChartView === 'ranks'
+                    ? {
+                        xaxis: { title: { text: 'Rank in Strategy A' }, dtick: 1 },
+                        yaxis: { title: { text: 'Rank in Strategy B' }, dtick: 1 },
+                      }
+                    : { barmode: 'group', xaxis: { tickangle: -20 } }
+                }
+              />
             </div>
-            <PlotlyChart
-              data={compareChartData}
-              isDark={isDark}
-              testId="rag-compare-chart"
-              className="w-full h-72"
-              layout={{ barmode: 'group', xaxis: { tickangle: -20 } }}
-            />
+
+            <div className="lg:col-span-4 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                Retrieval Agreement Split
+              </h3>
+              <PlotlyChart
+                data={overlapChartData}
+                isDark={isDark}
+                testId="rag-overlap-chart"
+                className="w-full h-72"
+                layout={{
+                  margin: { l: 16, r: 16, t: 16, b: 16 },
+                  showlegend: true,
+                  legend: { orientation: 'h', y: -0.05 },
+                }}
+              />
+            </div>
           </div>
 
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">

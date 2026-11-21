@@ -37,8 +37,8 @@ MODULES_STATUS = {
     "machine_learning": ModuleStatus(
         name="ML Visualization",
         phase=6,
-        status="planned",
-        description="Training metrics, confusion matrix, classification/regression evaluation, and feature importance",
+        status="completed",
+        description="Training/validation curves, confusion matrix, classification/regression diagnostics, permutation feature importance, and prediction error inspection",
     ),
 }
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import datasets, embeddings, health, rag, vectors
+from app.api.routes import datasets, embeddings, health, ml, rag, vectors
 from app.core.config import settings
 
 app = FastAPI(
@@ -25,6 +25,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(datasets.router, prefix="/api/datasets", tags=["Datasets"])
 app.include_router(embeddings.router, prefix="/api/embeddings", tags=["Embeddings"])
+app.include_router(ml.router, prefix="/api/ml", tags=["Machine Learning"])
 app.include_router(rag.router, prefix="/api/rag", tags=["RAG"])
 app.include_router(vectors.router, prefix="/api/vectors", tags=["Vectors"])
 

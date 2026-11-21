@@ -80,7 +80,7 @@ export const EmbeddingSpaceBar: React.FC<EmbeddingSpaceBarProps> = ({
       <button
         type="button"
         onClick={onToggleBuilder}
-        className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-slate-950 font-semibold text-xs transition-colors shrink-0 self-end lg:self-center"
+        className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-colors shrink-0 self-end lg:self-center"
       >
         <Plus className="w-4 h-4" />
         <span>{showBuilder ? 'Close Builder' : 'New Embedding Space'}</span>

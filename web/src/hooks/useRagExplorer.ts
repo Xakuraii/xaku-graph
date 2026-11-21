@@ -144,6 +144,10 @@ export function useRagExplorer() {
     }
   }, []);
 
+  const discoverExternal = useCallback(async (config: ExternalConnectionConfig) => {
+    return apiClient.listExternalRagCollections(config);
+  }, []);
+
   const createSandbox = useCallback(
     async (payload: CreateRagSandboxRequest) => {
       setCreating(true);
@@ -267,6 +271,7 @@ export function useRagExplorer() {
     error,
     selectCollection,
     connectExternal,
+    discoverExternal,
     createSandbox,
     deleteSandbox,
     runSearch,

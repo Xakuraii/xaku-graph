@@ -16,6 +16,11 @@ import {
   EmbeddingSpaceListResponse,
   EmbeddingSpaceSummary,
   HealthResponse,
+  MlDeleteResponse,
+  MlImportRequest,
+  MlRunDetail,
+  MlRunListResponse,
+  MlTrainRequest,
   PointInspectionResponse,
   ProjectionRequest,
   ProjectionResponse,
@@ -41,7 +46,7 @@ import {
   VectorDbConnectorInfo,
 } from '../types/api';
 
-const API_BASE = '/api';
+import { resolveApiBase } from './desktopBridge';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -51,7 +56,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const url = `${resolveApiBase()}${endpoint}`;
   const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData;
   const headers: HeadersInit = isFormData
     ? { ...options?.headers }
@@ -273,5 +278,27 @@ export const apiClient = {
     request<RagCompareResponse>('/rag/compare', {
       method: 'POST',
       body: JSON.stringify(payload),
+    }),
+
+  listMlRuns: () => request<MlRunListResponse>('/ml/runs'),
+
+  getMlRun: (runId: string) =>
+    request<MlRunDetail>(`/ml/runs/${encodeURIComponent(runId)}`),
+
+  trainMlModel: (payload: MlTrainRequest) =>
+    request<MlRunDetail>('/ml/train', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  importMlRun: (payload: MlImportRequest) =>
+    request<MlRunDetail>('/ml/import', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  deleteMlRun: (runId: string) =>
+    request<MlDeleteResponse>(`/ml/runs/${encodeURIComponent(runId)}`, {
+      method: 'DELETE',
     }),
 };

@@ -28,36 +28,108 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     const el = containerRef.current;
     if (!el) return;
 
-    const textColor = isDark ? '#cbd5e1' : '#334155';
-    const gridColor = isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(100, 116, 139, 0.18)';
+    const textColor = isDark ? '#f1f5f9' : '#0f172a';
+    const gridColor = isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(100, 116, 139, 0.28)';
+    const sceneGridColor = isDark ? '#475569' : '#94a3b8';
+    const sceneLineColor = isDark ? '#64748b' : '#475569';
+    const sceneZeroColor = isDark ? '#64748b' : '#475569';
+    const sceneWallBg = isDark ? 'rgba(15, 23, 42, 0.25)' : 'rgba(226, 232, 240, 0.55)';
+    const hoverBg = isDark ? '#0f172a' : '#ffffff';
+    const hoverBorder = isDark ? '#334155' : '#cbd5e1';
+
+    const { xaxis, yaxis, margin, scene, polar, ...restLayout } = layout;
+
+    const has3D =
+      Boolean(scene) ||
+      data.some((trace) => trace.type === 'scatter3d' || trace.type === 'surface');
+    const hasPolar =
+      Boolean(polar) || data.some((trace) => trace.type === 'scatterpolar');
+
+    const sceneAxisBase = {
+      showgrid: true,
+      gridcolor: sceneGridColor,
+      gridwidth: 1,
+      showline: true,
+      linecolor: sceneLineColor,
+      zeroline: true,
+      zerolinecolor: sceneZeroColor,
+      showbackground: true,
+      backgroundcolor: sceneWallBg,
+      tickfont: { color: textColor },
+      titlefont: { color: textColor },
+    };
 
     const mergedLayout: Partial<Layout> = {
       autosize: true,
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
+      hoverlabel: {
+        bgcolor: hoverBg,
+        bordercolor: hoverBorder,
+        font: { color: textColor, size: 11 },
+      },
       font: {
         color: textColor,
         family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         size: 11,
       },
-      margin: { l: 48, r: 24, t: 36, b: 44 },
+      ...restLayout,
+      margin: has3D
+        ? { l: 12, r: 12, t: 24, b: 12, ...margin }
+        : { l: 48, r: 24, t: 36, b: 44, ...margin },
       xaxis: {
         gridcolor: gridColor,
         zerolinecolor: gridColor,
-        ...layout.xaxis,
+        automargin: true,
+        ...xaxis,
       },
       yaxis: {
         gridcolor: gridColor,
         zerolinecolor: gridColor,
-        ...layout.yaxis,
+        automargin: true,
+        ...yaxis,
       },
-      ...layout,
+      ...(has3D
+        ? {
+            scene: {
+              bgcolor: 'rgba(0,0,0,0)',
+              ...scene,
+              xaxis: {
+                ...sceneAxisBase,
+                ...scene?.xaxis,
+              },
+              yaxis: {
+                ...sceneAxisBase,
+                ...scene?.yaxis,
+              },
+              zaxis: {
+                ...sceneAxisBase,
+                ...scene?.zaxis,
+              },
+            },
+          }
+        : {}),
+      ...(hasPolar
+        ? {
+            polar: {
+              bgcolor: 'rgba(0,0,0,0)',
+              ...polar,
+              radialaxis: { gridcolor: gridColor, ...polar?.radialaxis },
+              angularaxis: { gridcolor: gridColor, ...polar?.angularaxis },
+            },
+          }
+        : {}),
     };
 
     const mergedConfig: Partial<Config> = {
       responsive: true,
       displaylogo: false,
       modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+      toImageButtonOptions: {
+        format: 'png',
+        filename: testId ?? 'xakugraph-chart',
+        scale: 2,
+      },
       ...config,
     };
 

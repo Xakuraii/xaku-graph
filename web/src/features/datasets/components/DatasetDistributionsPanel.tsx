@@ -20,6 +20,7 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
   onChangeBins,
 }) => {
   const [selectedColumn, setSelectedColumn] = useState<string>('');
+  const [distView, setDistView] = useState<'histogram' | 'ecdf'>('histogram');
 
   useEffect(() => {
     if (data && data.distributions.length > 0) {
@@ -32,7 +33,7 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
 
   if (loading && !data) {
     return (
-      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-500">
+      <div className="h-64 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs text-slate-600 dark:text-slate-400">
         Computing distributions and quartiles...
       </div>
     );
@@ -40,7 +41,7 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
 
   if (!data || data.distributions.length === 0) {
     return (
-      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+      <div className="h-48 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
         No columns available for distribution analysis.
       </div>
     );
@@ -49,19 +50,49 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
   const activeDist =
     data.distributions.find((d) => d.column === selectedColumn) ?? data.distributions[0];
 
+  const totalBinCount =
+    activeDist.kind === 'numeric' && activeDist.histogram
+      ? activeDist.histogram.reduce((sum, b) => sum + b.count, 0)
+      : 0;
+
+  let runningSum = 0;
+  const ecdfPoints =
+    activeDist.kind === 'numeric' && activeDist.histogram && totalBinCount > 0
+      ? activeDist.histogram.map((b) => {
+          runningSum += b.count;
+          return {
+            x: b.end.toFixed(2),
+            pct: Number(((runningSum / totalBinCount) * 100).toFixed(1)),
+          };
+        })
+      : [];
+
   const histogramTraces: Data[] =
     activeDist.kind === 'numeric' && activeDist.histogram
-      ? [
-          {
-            type: 'bar',
-            x: activeDist.histogram.map((b) =>
-              b.start === b.end ? b.start.toFixed(2) : `${b.start.toFixed(2)}–${b.end.toFixed(2)}`
-            ),
-            y: activeDist.histogram.map((b) => b.count),
-            marker: { color: '#22c55e', line: { color: '#16a34a', width: 1 } },
-            name: activeDist.column,
-          },
-        ]
+      ? distView === 'ecdf'
+        ? [
+            {
+              type: 'scatter',
+              mode: 'lines+markers',
+              fill: 'tozeroy',
+              x: ecdfPoints.map((p) => p.x),
+              y: ecdfPoints.map((p) => p.pct),
+              line: { color: '#38bdf8', width: 2.5 },
+              marker: { color: '#38bdf8', size: 6 },
+              name: `${activeDist.column} ECDF %`,
+            },
+          ]
+        : [
+            {
+              type: 'bar',
+              x: activeDist.histogram.map((b) =>
+                b.start === b.end ? b.start.toFixed(2) : `${b.start.toFixed(2)}–${b.end.toFixed(2)}`
+              ),
+              y: activeDist.histogram.map((b) => b.count),
+              marker: { color: '#22c55e', line: { color: '#16a34a', width: 1 } },
+              name: activeDist.column,
+            },
+          ]
       : [];
 
   const boxplotTraces: Data[] =
@@ -70,20 +101,28 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
           {
             type: 'box',
             name: activeDist.column,
+            x: [activeDist.column],
             q1: [activeDist.boxplot.q1],
             median: [activeDist.boxplot.median],
             q3: [activeDist.boxplot.q3],
             lowerfence: [activeDist.boxplot.lower_fence],
             upperfence: [activeDist.boxplot.upper_fence],
-            y:
-              activeDist.boxplot.sample_outliers.length > 0
-                ? [activeDist.boxplot.sample_outliers]
-                : undefined,
             marker: { color: '#38bdf8' },
             line: { color: '#38bdf8' },
             fillcolor: 'rgba(56, 189, 248, 0.2)',
-            boxpoints: 'outliers',
           } as unknown as Data,
+          ...(activeDist.boxplot.sample_outliers.length > 0
+            ? [
+                {
+                  type: 'scatter' as const,
+                  mode: 'markers' as const,
+                  name: 'Outliers',
+                  x: activeDist.boxplot.sample_outliers.map(() => activeDist.column),
+                  y: activeDist.boxplot.sample_outliers,
+                  marker: { color: '#f43f5e', size: 7, symbol: 'circle-open' as const },
+                },
+              ]
+            : []),
         ]
       : [];
 
@@ -156,16 +195,44 @@ export const DatasetDistributionsPanel: React.FC<DatasetDistributionsPanelProps>
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                Value Distribution Histogram — {activeDist.column}
-              </h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                  {distView === 'ecdf'
+                    ? `Cumulative Distribution (ECDF %) — ${activeDist.column}`
+                    : `Value Distribution Histogram — ${activeDist.column}`}
+                </h3>
+                <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setDistView('histogram')}
+                    className={`px-2 py-0.5 rounded ${
+                      distView === 'histogram'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Histogram
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDistView('ecdf')}
+                    className={`px-2 py-0.5 rounded ${
+                      distView === 'ecdf'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Cumulative (ECDF)
+                  </button>
+                </div>
+              </div>
               <PlotlyChart
                 data={histogramTraces}
                 isDark={isDark}
                 testId="histogram-chart"
                 layout={{
-                  xaxis: { title: { text: 'Value Range' }, tickangle: -25 },
-                  yaxis: { title: { text: 'Row Count' } },
+                  xaxis: { title: { text: distView === 'ecdf' ? 'Bin Upper Bound' : 'Value Range' }, tickangle: -25 },
+                  yaxis: { title: { text: distView === 'ecdf' ? 'Cumulative %' : 'Row Count' } },
                   bargap: 0.08,
                 }}
               />

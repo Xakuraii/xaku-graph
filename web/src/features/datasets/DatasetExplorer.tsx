@@ -70,7 +70,7 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ isDark = true 
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Dataset Visualization
             </h1>
-            <StatusBadge status="live" label="Phase 2 Active" />
+            <StatusBadge status="live" label="Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Import local CSV, JSON, JSONL, Parquet, or Excel datasets to inspect distributions,
@@ -159,7 +159,9 @@ export const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ isDark = true 
       {/* Tab Content */}
       {inspection && (
         <div>
-          {activeTab === 'overview' && <DatasetOverviewPanel dataset={inspection} />}
+          {activeTab === 'overview' && (
+            <DatasetOverviewPanel dataset={inspection} isDark={isDark} />
+          )}
           {activeTab === 'data' && (
             <DatasetRowsTable
               columns={inspection.summary.columns}

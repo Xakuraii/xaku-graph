@@ -92,3 +92,18 @@ def test_unsupported_extension_raises_error(tmp_path: Path):
     bad_file.write_bytes(b"MZ")
     with pytest.raises(ValueError, match="Unsupported dataset format"):
         loader_registry.load_file(bad_file)
+
+
+def test_load_columnar_and_wrapped_json(tmp_path: Path):
+    col_json = tmp_path / "columnar.json"
+    col_json.write_text('{"x": [1, 2, 3], "label": ["a", "b", "c"]}', encoding="utf-8")
+    df_col, fmt_col = loader_registry.load_file(col_json)
+    assert fmt_col == "json"
+    assert df_col.height == 3
+    assert df_col.columns == ["x", "label"]
+
+    wrapped_json = tmp_path / "wrapped.json"
+    wrapped_json.write_text('{"data": [{"k": 10}, {"k": 20}]}', encoding="utf-8")
+    df_wrap, _ = loader_registry.load_file(wrapped_json)
+    assert df_wrap.height == 2
+    assert df_wrap["k"].to_list() == [10, 20]
