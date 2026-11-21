@@ -2,6 +2,14 @@
 
 All notable changes to XakuGraph will be documented in this file.
 
+## [0.6.0] - Phase 6 ML Visualization
+
+### Added
+- `MlService` (`backend/app/services/machine_learning/ml_service.py`) with two offline sample runs (`sample-ml-iris-classification`, `sample-ml-diabetes-regression`), local Scikit-Learn training on any uploaded dataset (`random_forest`, `gradient_boosting`, `logistic_regression`, `ridge`), validation permutation feature importance, and external JSON evaluation import persisted under `data/cache/ml/`.
+- ML REST API (`/api/ml/*`): run listing, run inspection, local training, external evaluation import, and custom run deletion.
+- Interactive React ML Visualization module (`MlExplorer`, `useMlExplorer`, `MlRunBar`, `MlRunBuilder`, `MlTrainingPanel`, `MlEvaluationPanel`, `MlExplainabilityPanel`) supporting training/validation loss & score curves, raw/normalized confusion matrix heatmaps, per-class precision/recall/F1 charts, regression Predicted vs Actual + Residual plots, feature importance comparison, and filterable misclassification error drilling.
+- ADR-0007 and ML API documentation (`docs/api/ml.md`), completing all 5 core XakuGraph studio modules.
+
 ## [0.5.0] - Phase 5 RAG Visualization
 
 ### Added

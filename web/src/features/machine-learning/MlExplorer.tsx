@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { AlertCircle, BarChart3, LineChart, RefreshCw, Sparkles } from 'lucide-react';
 import { StatusBadge } from '../../components/StatusBadge';
 import { MlTabId, useMlExplorer } from '../../hooks/useMlExplorer';
+import { MlEvaluationPanel } from './components/MlEvaluationPanel';
+import { MlExplainabilityPanel } from './components/MlExplainabilityPanel';
 import { MlRunBar } from './components/MlRunBar';
 import { MlRunBuilder } from './components/MlRunBuilder';
 import { MlTrainingPanel } from './components/MlTrainingPanel';
@@ -51,7 +53,7 @@ export const MlExplorer: React.FC<MlExplorerProps> = ({ isDark = true }) => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               ML Model & Evaluation Visualization
             </h1>
-            <StatusBadge status="in_development" label="Phase 6 Active" />
+            <StatusBadge status="live" label="Phase 6 Active" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Inspect training curves, confusion matrices, regression residuals, feature importance,
@@ -130,12 +132,9 @@ export const MlExplorer: React.FC<MlExplorerProps> = ({ isDark = true }) => {
       ) : (
         <>
           {activeTab === 'training' && <MlTrainingPanel run={runDetail} isDark={isDark} />}
-
-          {(activeTab === 'evaluation' || activeTab === 'explainability') && (
-            <div className="bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-              Confusion matrix, regression residuals, feature importance, and prediction error
-              explorer loading in Stage 4.
-            </div>
+          {activeTab === 'evaluation' && <MlEvaluationPanel run={runDetail} isDark={isDark} />}
+          {activeTab === 'explainability' && (
+            <MlExplainabilityPanel run={runDetail} isDark={isDark} />
           )}
         </>
       )}

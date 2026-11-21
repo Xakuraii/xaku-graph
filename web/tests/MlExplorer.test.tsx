@@ -156,4 +156,43 @@ describe('MlExplorer Stage 3', () => {
     fireEvent.click(screen.getByRole('button', { name: /Import Evaluation JSON/i }));
     expect(screen.getByRole('button', { name: /Import & Analyze Results/i })).toBeInTheDocument();
   });
+
+  it('switches to Evaluation & Matrix tab and toggles confusion matrix normalization', async () => {
+    render(<MlExplorer isDark={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Evaluation & Matrix/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Evaluation & Matrix/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('ml-confusion-matrix')).toBeInTheDocument();
+      expect(screen.getByTestId('ml-per-class-chart')).toBeInTheDocument();
+      expect(screen.getByText('setosa')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Showing Raw Counts/i }));
+    expect(screen.getByRole('button', { name: /Showing Row %/i })).toBeInTheDocument();
+  });
+
+  it('switches to Features & Predictions tab and filters misclassified samples', async () => {
+    render(<MlExplorer isDark={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Features & Predictions/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Features & Predictions/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('ml-feature-importance-chart')).toBeInTheDocument();
+      expect(screen.getByText('Match')).toBeInTheDocument();
+      expect(screen.getByText('Misclassified')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Errors Only/i }));
+    expect(screen.queryByText('Match')).not.toBeInTheDocument();
+    expect(screen.getByText('Misclassified')).toBeInTheDocument();
+  });
 });
