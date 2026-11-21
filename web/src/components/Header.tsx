@@ -37,9 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-emerald-500 flex items-center justify-center font-bold text-white text-lg shadow-sm shrink-0">
-          X
-        </div>
+        <img
+          src="/favicon.svg"
+          alt="XakuGraph logo"
+          className="w-8 h-8 rounded-lg shadow-sm shrink-0"
+        />
         <div className="min-w-0">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-slate-900 dark:text-white tracking-tight text-sm sm:text-base truncate">
