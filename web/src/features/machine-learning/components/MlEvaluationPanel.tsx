@@ -11,6 +11,8 @@ interface MlEvaluationPanelProps {
 
 export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDark }) => {
   const [normalizedCm, setNormalizedCm] = useState(false);
+  const [cmView, setCmView] = useState<'heatmap' | 'surface3d'>('heatmap');
+  const [regView, setRegView] = useState<'2d' | '3d'>('2d');
 
   if (run.task_type === 'classification' && run.classification) {
     const cls = run.classification;
@@ -19,23 +21,35 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
       ? cm.normalized_matrix.map((row) => row.map((v) => Number((v * 100).toFixed(1))))
       : cm.matrix;
 
-    const cmData: Data[] = [
-      {
-        type: 'heatmap',
-        x: cm.labels,
-        y: cm.labels,
-        z: zValues,
-        colorscale: 'Viridis',
-        showscale: true,
-        text: zValues.map((row) =>
-          row.map((v) => (normalizedCm ? `${v}%` : String(v)))
-        ) as unknown as string[],
-        texttemplate: '%{text}',
-        hovertemplate: normalizedCm
-          ? 'Actual: %{y}<br>Predicted: %{x}<br>Rate: %{z:.1f}%<extra></extra>'
-          : 'Actual: %{y}<br>Predicted: %{x}<br>Count: %{z}<extra></extra>',
-      },
-    ];
+    const cmData: Data[] =
+      cmView === 'surface3d'
+        ? [
+            {
+              type: 'surface',
+              x: cm.labels,
+              y: cm.labels,
+              z: zValues,
+              colorscale: 'Viridis',
+              showscale: true,
+            } as unknown as Data,
+          ]
+        : [
+            {
+              type: 'heatmap',
+              x: cm.labels,
+              y: cm.labels,
+              z: zValues,
+              colorscale: 'Viridis',
+              showscale: true,
+              text: zValues.map((row) =>
+                row.map((v) => (normalizedCm ? `${v}%` : String(v)))
+              ) as unknown as string[],
+              texttemplate: '%{text}',
+              hovertemplate: normalizedCm
+                ? 'Actual: %{y}<br>Predicted: %{x}<br>Rate: %{z:.1f}%<extra></extra>'
+                : 'Actual: %{y}<br>Predicted: %{x}<br>Count: %{z}<extra></extra>',
+            },
+          ];
 
     const perClassData: Data[] = [
       {
@@ -121,7 +135,7 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Confusion Matrix */}
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
                 <Grid3X3 className="w-4 h-4 text-brand-500" />
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
@@ -129,13 +143,39 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
                 </h3>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setNormalizedCm((prev) => !prev)}
-                className="px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:border-brand-500"
-              >
-                {normalizedCm ? 'Showing Row %' : 'Showing Raw Counts'}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setCmView('heatmap')}
+                    className={`px-2 py-0.5 rounded ${
+                      cmView === 'heatmap'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Heatmap
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCmView('surface3d')}
+                    className={`px-2 py-0.5 rounded ${
+                      cmView === 'surface3d'
+                        ? 'bg-sky-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    3D Surface
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNormalizedCm((prev) => !prev)}
+                  className="px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:border-brand-500"
+                >
+                  {normalizedCm ? 'Showing Row %' : 'Showing Raw Counts'}
+                </button>
+              </div>
             </div>
 
             <PlotlyChart
@@ -143,10 +183,21 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
               isDark={isDark}
               testId="ml-confusion-matrix"
               className="w-full h-80"
-              layout={{
-                xaxis: { title: { text: 'Predicted Class' } },
-                yaxis: { title: { text: 'Actual Class' }, autorange: 'reversed' },
-              }}
+              layout={
+                cmView === 'surface3d'
+                  ? {
+                      margin: { l: 0, r: 0, t: 16, b: 0 },
+                      scene: {
+                        xaxis: { title: { text: 'Predicted' } },
+                        yaxis: { title: { text: 'Actual' } },
+                        zaxis: { title: { text: normalizedCm ? 'Rate %' : 'Count' } },
+                      },
+                    }
+                  : {
+                      xaxis: { title: { text: 'Predicted Class' } },
+                      yaxis: { title: { text: 'Actual Class' }, autorange: 'reversed' },
+                    }
+              }
             />
           </div>
 
@@ -301,22 +352,80 @@ export const MlEvaluationPanel: React.FC<MlEvaluationPanelProps> = ({ run, isDar
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                Predicted vs Actual Target
-              </h3>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                  {regView === '3d'
+                    ? '3D Actual · Predicted · |Error| Manifold'
+                    : 'Predicted vs Actual Target'}
+                </h3>
+              </div>
+              <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setRegView('2d')}
+                  className={`px-2 py-0.5 rounded ${
+                    regView === '2d'
+                      ? 'bg-brand-600 text-white font-semibold'
+                      : 'text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  2D Scatter
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegView('3d')}
+                  className={`px-2 py-0.5 rounded ${
+                    regView === '3d'
+                      ? 'bg-sky-600 text-white font-semibold'
+                      : 'text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  3D Manifold
+                </button>
+              </div>
             </div>
             <PlotlyChart
-              data={predVsActualData}
+              data={
+                regView === '3d'
+                  ? [
+                      {
+                        type: 'scatter3d',
+                        mode: 'markers',
+                        name: 'Samples',
+                        x: actualVals,
+                        y: predVals,
+                        z: residualVals.map((v) => Math.abs(v)),
+                        marker: {
+                          size: 5,
+                          color: residualVals.map((v) => Math.abs(v)),
+                          colorscale: 'YlOrRd',
+                          showscale: true,
+                        },
+                      } as unknown as Data,
+                    ]
+                  : predVsActualData
+              }
               isDark={isDark}
               testId="ml-pred-vs-actual"
               className="w-full h-80"
-              layout={{
-                xaxis: { title: { text: 'Actual Value' } },
-                yaxis: { title: { text: 'Predicted Value' } },
-                legend: { orientation: 'h', y: 1.12 },
-              }}
+              layout={
+                regView === '3d'
+                  ? {
+                      margin: { l: 0, r: 0, t: 16, b: 0 },
+                      scene: {
+                        xaxis: { title: { text: 'Actual' } },
+                        yaxis: { title: { text: 'Predicted' } },
+                        zaxis: { title: { text: '|Residual|' } },
+                      },
+                    }
+                  : {
+                      xaxis: { title: { text: 'Actual Value' } },
+                      yaxis: { title: { text: 'Predicted Value' } },
+                      legend: { orientation: 'h', y: 1.12 },
+                    }
+              }
             />
           </div>
 

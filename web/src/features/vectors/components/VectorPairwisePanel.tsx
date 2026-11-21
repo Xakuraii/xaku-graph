@@ -32,26 +32,76 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
   onCalculate,
 }) => {
   const [showNormalized, setShowNormalized] = useState(false);
+  const [compChartType, setCompChartType] = useState<'bar' | 'radar' | 'line'>('bar');
+  const [geomMode, setGeomMode] = useState<'2d' | '3d'>('2d');
+
+  const compLabels = inspectA ? inspectA.values.map((_, idx) => `d${idx}`) : [];
+  const valsA = inspectA ? (showNormalized ? inspectA.normalized_values : inspectA.values) : [];
+  const valsB = inspectB ? (showNormalized ? inspectB.normalized_values : inspectB.values) : [];
 
   const componentChartData: Data[] =
     inspectA && inspectB
-      ? [
-          {
-            type: 'bar',
-            name: 'Vector A',
-            x: inspectA.values.map((_, idx) => `d${idx}`),
-            y: showNormalized ? inspectA.normalized_values : inspectA.values,
-            marker: { color: '#22c55e' },
-          },
-          {
-            type: 'bar',
-            name: 'Vector B',
-            x: inspectB.values.map((_, idx) => `d${idx}`),
-            y: showNormalized ? inspectB.normalized_values : inspectB.values,
-            marker: { color: '#38bdf8' },
-          },
-        ]
+      ? compChartType === 'radar'
+        ? [
+            {
+              type: 'scatterpolar',
+              r: valsA,
+              theta: compLabels,
+              fill: 'toself',
+              name: 'Vector A',
+              line: { color: '#22c55e' },
+            } as unknown as Data,
+            {
+              type: 'scatterpolar',
+              r: valsB,
+              theta: compLabels,
+              fill: 'toself',
+              name: 'Vector B',
+              line: { color: '#38bdf8' },
+            } as unknown as Data,
+          ]
+        : compChartType === 'line'
+        ? [
+            {
+              type: 'scatter',
+              mode: 'lines+markers',
+              name: 'Vector A',
+              x: compLabels,
+              y: valsA,
+              line: { color: '#22c55e', width: 2.5 },
+              marker: { size: 7 },
+            },
+            {
+              type: 'scatter',
+              mode: 'lines+markers',
+              name: 'Vector B',
+              x: compLabels,
+              y: valsB,
+              line: { color: '#38bdf8', width: 2.5 },
+              marker: { size: 7 },
+            },
+          ]
+        : [
+            {
+              type: 'bar',
+              name: 'Vector A',
+              x: compLabels,
+              y: valsA,
+              marker: { color: '#22c55e' },
+            },
+            {
+              type: 'bar',
+              name: 'Vector B',
+              x: compLabels,
+              y: valsB,
+              marker: { color: '#38bdf8' },
+            },
+          ]
       : [];
+
+  const can3D = (inspectA?.values.length ?? 0) >= 3 && (inspectB?.values.length ?? 0) >= 3;
+  const normA3 = can3D && inspectA ? inspectA.normalized_values.slice(0, 3) : [1, 0, 0];
+  const normB3 = can3D && inspectB ? inspectB.normalized_values.slice(0, 3) : [0, 1, 0];
 
   const angleRad = ((result?.angle_degrees ?? 0) * Math.PI) / 180;
   const circleAngles = Array.from({ length: 65 }, (_, i) => (i / 64) * 2 * Math.PI);
@@ -240,25 +290,92 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
           {/* Component & Geometric Angle Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <div className="lg:col-span-5 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Unit-Plane Angle Geometry (θ = {(result.angle_degrees ?? 0).toFixed(2)}°)
-              </h3>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                  Angle Geometry (θ = {(result.angle_degrees ?? 0).toFixed(2)}°)
+                </h3>
+                {can3D && (
+                  <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setGeomMode('2d')}
+                      className={`px-2 py-0.5 rounded ${
+                        geomMode === '2d'
+                          ? 'bg-sky-600 text-white font-semibold'
+                          : 'text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      2D Plane
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGeomMode('3d')}
+                      className={`px-2 py-0.5 rounded ${
+                        geomMode === '3d'
+                          ? 'bg-sky-600 text-white font-semibold'
+                          : 'text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      3D Rays
+                    </button>
+                  </div>
+                )}
+              </div>
               <PlotlyChart
-                data={anglePlaneData}
+                data={
+                  geomMode === '3d' && can3D
+                    ? [
+                        {
+                          type: 'scatter3d',
+                          mode: 'lines+markers+text',
+                          name: 'Unit A (d0..d2)',
+                          x: [0, normA3[0]],
+                          y: [0, normA3[1]],
+                          z: [0, normA3[2]],
+                          text: ['', 'Â'],
+                          line: { color: '#22c55e', width: 5 },
+                          marker: { size: [3, 7], color: '#22c55e' },
+                        } as unknown as Data,
+                        {
+                          type: 'scatter3d',
+                          mode: 'lines+markers+text',
+                          name: 'Unit B (d0..d2)',
+                          x: [0, normB3[0]],
+                          y: [0, normB3[1]],
+                          z: [0, normB3[2]],
+                          text: ['', 'B̂'],
+                          line: { color: '#38bdf8', width: 5 },
+                          marker: { size: [3, 7], color: '#38bdf8' },
+                        } as unknown as Data,
+                      ]
+                    : anglePlaneData
+                }
                 isDark={isDark}
                 testId="vector-angle-chart"
                 className="w-full h-64"
-                layout={{
-                  xaxis: { range: [-1.3, 1.3], zeroline: true, title: { text: 'Unit X' } },
-                  yaxis: {
-                    range: [-1.3, 1.3],
-                    scaleanchor: 'x',
-                    scaleratio: 1,
-                    zeroline: true,
-                    title: { text: 'Unit Y' },
-                  },
-                  legend: { orientation: 'h', y: 1.15 },
-                }}
+                layout={
+                  geomMode === '3d' && can3D
+                    ? {
+                        margin: { l: 0, r: 0, t: 10, b: 0 },
+                        scene: {
+                          xaxis: { title: { text: 'd0' }, range: [-1, 1] },
+                          yaxis: { title: { text: 'd1' }, range: [-1, 1] },
+                          zaxis: { title: { text: 'd2' }, range: [-1, 1] },
+                        },
+                        legend: { orientation: 'h', y: 1.1 },
+                      }
+                    : {
+                        xaxis: { range: [-1.3, 1.3], zeroline: true, title: { text: 'Unit X' } },
+                        yaxis: {
+                          range: [-1.3, 1.3],
+                          scaleanchor: 'x',
+                          scaleratio: 1,
+                          zeroline: true,
+                          title: { text: 'Unit Y' },
+                        },
+                        legend: { orientation: 'h', y: 1.15 },
+                      }
+                }
               />
             </div>
 
@@ -268,24 +385,46 @@ export const VectorPairwisePanel: React.FC<VectorPairwisePanelProps> = ({
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Component-Wise Vector Comparison
                   </h3>
-                  <button
-                    type="button"
-                    onClick={() => setShowNormalized((prev) => !prev)}
-                    className="text-xs px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:border-brand-500"
-                  >
-                    {showNormalized ? 'Showing L2 Normalized' : 'Showing Raw Values'} (Toggle)
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                      {(['bar', 'radar', 'line'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setCompChartType(mode)}
+                          className={`px-2 py-0.5 rounded capitalize ${
+                            compChartType === mode
+                              ? 'bg-brand-600 text-white font-semibold'
+                              : 'text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          {mode}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowNormalized((prev) => !prev)}
+                      className="text-xs px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:border-brand-500"
+                    >
+                      {showNormalized ? 'L2 Normalized' : 'Raw Values'}
+                    </button>
+                  </div>
                 </div>
                 <PlotlyChart
                   data={componentChartData}
                   isDark={isDark}
                   testId="vector-component-chart"
                   className="w-full h-64"
-                  layout={{
-                    barmode: 'group',
-                    xaxis: { title: { text: 'Dimension Index' } },
-                    yaxis: { title: { text: showNormalized ? 'Normalized Value' : 'Component Value' } },
-                  }}
+                  layout={
+                    compChartType === 'radar'
+                      ? { margin: { l: 36, r: 36, t: 24, b: 24 } }
+                      : {
+                          barmode: 'group',
+                          xaxis: { title: { text: 'Dimension Index' } },
+                          yaxis: { title: { text: showNormalized ? 'Normalized Value' : 'Component Value' } },
+                        }
+                  }
                 />
               </div>
             )}

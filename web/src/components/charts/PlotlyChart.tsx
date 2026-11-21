@@ -33,7 +33,13 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
     const hoverBg = isDark ? '#0f172a' : '#ffffff';
     const hoverBorder = isDark ? '#334155' : '#cbd5e1';
 
-    const { xaxis, yaxis, margin, ...restLayout } = layout;
+    const { xaxis, yaxis, margin, scene, polar, ...restLayout } = layout;
+
+    const has3D =
+      Boolean(scene) ||
+      data.some((trace) => trace.type === 'scatter3d' || trace.type === 'surface');
+    const hasPolar =
+      Boolean(polar) || data.some((trace) => trace.type === 'scatterpolar');
 
     const mergedLayout: Partial<Layout> = {
       autosize: true,
@@ -63,6 +69,42 @@ export const PlotlyChart: React.FC<PlotlyChartProps> = ({
         automargin: true,
         ...yaxis,
       },
+      ...(has3D
+        ? {
+            scene: {
+              bgcolor: 'rgba(0,0,0,0)',
+              ...scene,
+              xaxis: {
+                gridcolor: gridColor,
+                zerolinecolor: gridColor,
+                backgroundcolor: 'rgba(0,0,0,0)',
+                ...scene?.xaxis,
+              },
+              yaxis: {
+                gridcolor: gridColor,
+                zerolinecolor: gridColor,
+                backgroundcolor: 'rgba(0,0,0,0)',
+                ...scene?.yaxis,
+              },
+              zaxis: {
+                gridcolor: gridColor,
+                zerolinecolor: gridColor,
+                backgroundcolor: 'rgba(0,0,0,0)',
+                ...scene?.zaxis,
+              },
+            },
+          }
+        : {}),
+      ...(hasPolar
+        ? {
+            polar: {
+              bgcolor: 'rgba(0,0,0,0)',
+              ...polar,
+              radialaxis: { gridcolor: gridColor, ...polar?.radialaxis },
+              angularaxis: { gridcolor: gridColor, ...polar?.angularaxis },
+            },
+          }
+        : {}),
     };
 
     const mergedConfig: Partial<Config> = {

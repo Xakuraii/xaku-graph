@@ -134,6 +134,9 @@ describe('VectorExplorer Phase 4 Stage 2', () => {
       expect(screen.getByTestId('vector-space-plot')).toBeInTheDocument();
       expect(screen.getByText('PCA 2D Visual Projection')).toBeInTheDocument();
     });
+
+    fireEvent.click(screen.getByRole('button', { name: /^3D$/i }));
+    expect(screen.getByText('3D Vector Space View')).toBeInTheDocument();
   });
 
   it('supports JSON array vector inputs', async () => {

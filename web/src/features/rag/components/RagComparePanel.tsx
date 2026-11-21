@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GitCompare, Play } from 'lucide-react';
 import { Data } from 'plotly.js-dist-min';
 import {
@@ -36,28 +36,61 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
   onChangeStrategyB,
   onCompare,
 }) => {
+  const [mainChartView, setMainChartView] = useState<'scores' | 'ranks'>('scores');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onCompare();
   };
 
+  const sharedItems = compareResult
+    ? compareResult.comparison_items.filter(
+        (i) => i.rank_a !== null && i.rank_a !== undefined && i.rank_b !== null && i.rank_b !== undefined
+      )
+    : [];
+
   const compareChartData: Data[] = compareResult
-    ? [
-        {
-          type: 'bar',
-          name: strategyA.label,
-          x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
-          y: compareResult.comparison_items.map((i) => i.score_a ?? 0),
-          marker: { color: '#22c55e' },
-        },
-        {
-          type: 'bar',
-          name: strategyB.label,
-          x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
-          y: compareResult.comparison_items.map((i) => i.score_b ?? 0),
-          marker: { color: '#38bdf8' },
-        },
-      ]
+    ? mainChartView === 'ranks'
+      ? [
+          {
+            type: 'scatter',
+            mode: 'markers+text',
+            name: 'Shared Chunks',
+            x: sharedItems.map((i) => i.rank_a as number),
+            y: sharedItems.map((i) => i.rank_b as number),
+            text: sharedItems.map((i) => `#${i.chunk_index}`),
+            textposition: 'top center',
+            hovertext: sharedItems.map(
+              (i) => `${i.doc_title} (#${i.chunk_index})<br>Rank A: ${i.rank_a}, Rank B: ${i.rank_b}`
+            ),
+            hoverinfo: 'text',
+            marker: { size: 11, color: '#22c55e' },
+          },
+          {
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Identical Rank (y = x)',
+            x: [1, Math.max(strategyA.top_k, strategyB.top_k, 1)],
+            y: [1, Math.max(strategyA.top_k, strategyB.top_k, 1)],
+            line: { color: '#94a3b8', dash: 'dot', width: 1.5 },
+          },
+        ]
+      : [
+          {
+            type: 'bar',
+            name: strategyA.label,
+            x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
+            y: compareResult.comparison_items.map((i) => i.score_a ?? 0),
+            marker: { color: '#22c55e' },
+          },
+          {
+            type: 'bar',
+            name: strategyB.label,
+            x: compareResult.comparison_items.map((i) => `${i.doc_title} #${i.chunk_index}`),
+            y: compareResult.comparison_items.map((i) => i.score_b ?? 0),
+            marker: { color: '#38bdf8' },
+          },
+        ]
     : [];
 
   const overlapChartData: Data[] = compareResult
@@ -202,18 +235,53 @@ export const RagComparePanel: React.FC<RagComparePanelProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <div className="lg:col-span-8 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-              <div className="flex items-center space-x-2">
-                <GitCompare className="w-4 h-4 text-brand-500" />
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                  Score Comparison Across Retrieved Chunks
-                </h3>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <GitCompare className="w-4 h-4 text-brand-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    {mainChartView === 'ranks'
+                      ? 'Strategy A vs Strategy B Rank Scatter'
+                      : 'Score Comparison Across Retrieved Chunks'}
+                  </h3>
+                </div>
+                <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setMainChartView('scores')}
+                    className={`px-2 py-0.5 rounded ${
+                      mainChartView === 'scores'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Score Bars
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMainChartView('ranks')}
+                    className={`px-2 py-0.5 rounded ${
+                      mainChartView === 'ranks'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Rank A vs B
+                  </button>
+                </div>
               </div>
               <PlotlyChart
                 data={compareChartData}
                 isDark={isDark}
                 testId="rag-compare-chart"
                 className="w-full h-72"
-                layout={{ barmode: 'group', xaxis: { tickangle: -20 } }}
+                layout={
+                  mainChartView === 'ranks'
+                    ? {
+                        xaxis: { title: { text: 'Rank in Strategy A' }, dtick: 1 },
+                        yaxis: { title: { text: 'Rank in Strategy B' }, dtick: 1 },
+                      }
+                    : { barmode: 'group', xaxis: { tickangle: -20 } }
+                }
               />
             </div>
 

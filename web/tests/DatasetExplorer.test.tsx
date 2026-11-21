@@ -294,8 +294,13 @@ describe('DatasetExplorer Phase 2', () => {
 
     fireEvent.click(screen.getByText('spearman'));
     await waitFor(() => {
-      expect(screen.getByText('Spearman (Rank) Correlation Heatmap')).toBeInTheDocument();
+      expect(screen.getByText('Spearman (Rank) Correlation Matrix')).toBeInTheDocument();
     });
+
+    fireEvent.click(screen.getByRole('button', { name: /3D Surface/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^3D$/i }));
+    expect(screen.getByTestId('correlation-heatmap')).toBeInTheDocument();
+    expect(screen.getByTestId('scatter-chart')).toBeInTheDocument();
   });
 
   it('pastes CSV or JSON code and imports dataset', async () => {

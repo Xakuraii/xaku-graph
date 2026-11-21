@@ -12,6 +12,77 @@ interface MlExplainabilityPanelProps {
 export const MlExplainabilityPanel: React.FC<MlExplainabilityPanelProps> = ({ run, isDark }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyErrors, setOnlyErrors] = useState(false);
+  const [featureView, setFeatureView] = useState<'bar' | '3d'>('bar');
+
+  const top3Features = run.feature_importances.slice(0, 3).map((f) => f.feature);
+  const canFeature3d =
+    top3Features.length === 3 &&
+    run.predictions.some(
+      (p) =>
+        p.features &&
+        typeof p.features[top3Features[0]] === 'number' &&
+        typeof p.features[top3Features[1]] === 'number' &&
+        typeof p.features[top3Features[2]] === 'number'
+    );
+
+  const feature3dTraces: Data[] = useMemo(() => {
+    if (!canFeature3d) return [];
+    const [f1, f2, f3] = top3Features;
+    const valid = run.predictions.filter(
+      (p) =>
+        typeof p.features?.[f1] === 'number' &&
+        typeof p.features?.[f2] === 'number' &&
+        typeof p.features?.[f3] === 'number'
+    );
+    if (run.task_type === 'classification') {
+      const correct = valid.filter((p) => p.is_correct === true);
+      const wrong = valid.filter((p) => p.is_correct === false);
+      return [
+        {
+          type: 'scatter3d',
+          mode: 'markers',
+          name: 'Correct Predictions',
+          x: correct.map((p) => p.features[f1] as number),
+          y: correct.map((p) => p.features[f2] as number),
+          z: correct.map((p) => p.features[f3] as number),
+          text: correct.map((p) => `#${p.index} Actual: ${p.actual}`),
+          marker: { size: 5, color: '#22c55e', opacity: 0.85 },
+        } as unknown as Data,
+        ...(wrong.length > 0
+          ? [
+              {
+                type: 'scatter3d',
+                mode: 'markers',
+                name: 'Misclassified',
+                x: wrong.map((p) => p.features[f1] as number),
+                y: wrong.map((p) => p.features[f2] as number),
+                z: wrong.map((p) => p.features[f3] as number),
+                text: wrong.map((p) => `#${p.index} Actual: ${p.actual}, Pred: ${p.predicted}`),
+                marker: { size: 7, color: '#f43f5e', symbol: 'diamond', opacity: 0.95 },
+              } as unknown as Data,
+            ]
+          : []),
+      ];
+    }
+
+    return [
+      {
+        type: 'scatter3d',
+        mode: 'markers',
+        name: 'Validation Samples',
+        x: valid.map((p) => p.features[f1] as number),
+        y: valid.map((p) => p.features[f2] as number),
+        z: valid.map((p) => p.features[f3] as number),
+        text: valid.map((p) => `#${p.index} Actual: ${p.actual}, Error: ${p.abs_error ?? 0}`),
+        marker: {
+          size: 5,
+          color: valid.map((p) => p.abs_error ?? 0),
+          colorscale: 'YlOrRd',
+          showscale: true,
+        },
+      } as unknown as Data,
+    ];
+  }, [canFeature3d, top3Features, run.predictions, run.task_type]);
 
   const sortedImportances = useMemo(
     () => [...run.feature_importances].sort((a, b) => a.importance - b.importance),
@@ -85,25 +156,68 @@ export const MlExplainabilityPanel: React.FC<MlExplainabilityPanelProps> = ({ ru
     <div className="space-y-6">
       {/* Feature Importance Chart */}
       <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
-        <div className="flex items-center space-x-2">
-          <Sparkles className="w-4 h-4 text-purple-500" />
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-            Feature Importance & Permutation Analysis ({run.feature_importances.length} features)
-          </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-4 h-4 text-purple-500" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+              {featureView === '3d' && canFeature3d
+                ? `3D Top-3 Feature Error Space (${top3Features.join(' · ')})`
+                : `Feature Importance & Permutation Analysis (${run.feature_importances.length} features)`}
+            </h3>
+          </div>
+
+          {canFeature3d && (
+            <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setFeatureView('bar')}
+                className={`px-2 py-0.5 rounded ${
+                  featureView === 'bar'
+                    ? 'bg-brand-600 text-white font-semibold'
+                    : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                Importance Bars
+              </button>
+              <button
+                type="button"
+                onClick={() => setFeatureView('3d')}
+                className={`px-2 py-0.5 rounded ${
+                  featureView === '3d'
+                    ? 'bg-sky-600 text-white font-semibold'
+                    : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                3D Feature Space
+              </button>
+            </div>
+          )}
         </div>
 
         {sortedImportances.length > 0 ? (
           <PlotlyChart
-            data={importanceChartData}
+            data={featureView === '3d' && canFeature3d ? feature3dTraces : importanceChartData}
             isDark={isDark}
             testId="ml-feature-importance-chart"
-            className="w-full h-72"
-            layout={{
-              barmode: 'group',
-              margin: { l: 90, r: 24, t: 24, b: 40 },
-              xaxis: { title: { text: 'Relative Importance Score' } },
-              legend: { orientation: 'h', y: 1.12 },
-            }}
+            className="w-full h-80"
+            layout={
+              featureView === '3d' && canFeature3d
+                ? {
+                    margin: { l: 0, r: 0, t: 16, b: 0 },
+                    scene: {
+                      xaxis: { title: { text: top3Features[0] } },
+                      yaxis: { title: { text: top3Features[1] } },
+                      zaxis: { title: { text: top3Features[2] } },
+                    },
+                    legend: { orientation: 'h', y: 1.08 },
+                  }
+                : {
+                    barmode: 'group',
+                    margin: { l: 90, r: 24, t: 24, b: 40 },
+                    xaxis: { title: { text: 'Relative Importance Score' } },
+                    legend: { orientation: 'h', y: 1.12 },
+                  }
+            }
           />
         ) : (
           <p className="text-xs text-slate-600 dark:text-slate-400 py-4">

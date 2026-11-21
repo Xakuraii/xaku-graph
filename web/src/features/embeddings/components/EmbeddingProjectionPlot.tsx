@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layers, Sparkles } from 'lucide-react';
 import { Data, Layout } from 'plotly.js-dist-min';
 import { ProjectedPoint, ProjectionResponse } from '../../../types/api';
@@ -34,6 +34,7 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
   isDark,
   onSelectPoint,
 }) => {
+  const [showContours, setShowContours] = useState(false);
   const is3D = projection.dimensions === 3;
   const useWebGL = !is3D && projection.points.length > 500;
 
@@ -148,7 +149,26 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
     }
   }
 
-  const allTraces: Data[] = [...neighborLinkTraces, ...traces];
+  const contourTraces: Data[] =
+    !is3D && showContours && projection.points.length >= 4
+      ? [
+          {
+            type: 'histogram2dcontour',
+            x: projection.points.map((p) => p.x),
+            y: projection.points.map((p) => p.y),
+            colorscale: 'Greens',
+            reversescale: isDark,
+            showscale: false,
+            ncontours: 10,
+            contours: { coloring: 'lines' },
+            line: { width: 1 },
+            hoverinfo: 'skip',
+            name: 'Density Contour',
+          } as unknown as Data,
+        ]
+      : [];
+
+  const allTraces: Data[] = [...contourTraces, ...neighborLinkTraces, ...traces];
 
   const varianceChartData: Data[] =
     projection.explained_variance_ratio && projection.explained_variance_ratio.length > 0
@@ -193,15 +213,30 @@ export const EmbeddingProjectionPlot: React.FC<EmbeddingProjectionPlotProps> = (
             </h2>
           </div>
 
-          {projection.explained_variance_ratio &&
-            projection.explained_variance_ratio.length > 0 && (
-              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                Explained Variance:{' '}
-                {projection.explained_variance_ratio
-                  .map((v, i) => `PC${i + 1}: ${(v * 100).toFixed(1)}%`)
-                  .join(' · ')}
-              </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {!is3D && (
+              <button
+                type="button"
+                onClick={() => setShowContours((prev) => !prev)}
+                className={`text-[11px] px-2.5 py-0.5 rounded border transition-colors ${
+                  showContours
+                    ? 'bg-brand-600 border-brand-500 text-white font-semibold'
+                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                {showContours ? 'Density Contours: On' : 'Density Contours'}
+              </button>
             )}
+            {projection.explained_variance_ratio &&
+              projection.explained_variance_ratio.length > 0 && (
+                <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
+                  Explained Variance:{' '}
+                  {projection.explained_variance_ratio
+                    .map((v, i) => `PC${i + 1}: ${(v * 100).toFixed(1)}%`)
+                    .join(' · ')}
+                </span>
+              )}
+          </div>
         </div>
 
         <div className={loading ? 'opacity-60 transition-opacity' : ''}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart3, Binary, Filter, Search, ShieldCheck } from 'lucide-react';
 import { Data } from 'plotly.js-dist-min';
 import { RagSearchResponse, RagSimilarityMetric } from '../../../types/api';
@@ -39,6 +39,8 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
   onChangeFilterValue,
   onSearch,
 }) => {
+  const [chartView, setChartView] = useState<'bar' | '3d'>('bar');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch();
@@ -46,21 +48,46 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
 
   const reversedResults = searchResult ? [...searchResult.results].reverse() : [];
   const scoreChartData: Data[] = searchResult
-    ? [
-        {
-          type: 'bar',
-          orientation: 'h',
-          y: reversedResults.map((r) => {
-            const label = `${r.doc_title} (#${r.chunk_index})`;
-            return label.length > 28 ? `${label.slice(0, 26)}…` : label;
-          }),
-          x: reversedResults.map((r) => r.score),
-          text: reversedResults.map((r) => r.score.toFixed(4)),
-          textposition: 'auto',
-          marker: { color: '#22c55e' },
-          name: metric,
-        },
-      ]
+    ? chartView === '3d'
+      ? [
+          {
+            type: 'scatter3d',
+            mode: 'markers+text',
+            x: searchResult.results.map((r) => r.cosine_similarity),
+            y: searchResult.results.map((r) => r.euclidean_distance),
+            z: searchResult.results.map((r) => r.dot_product),
+            text: searchResult.results.map((r) => `#${r.rank}`),
+            hovertext: searchResult.results.map(
+              (r) =>
+                `Rank #${r.rank}: ${r.doc_title} (#${r.chunk_index})<br>cos=${r.cosine_similarity.toFixed(
+                  4
+                )}, L2=${r.euclidean_distance.toFixed(4)}, dot=${r.dot_product.toFixed(4)}`
+            ),
+            hoverinfo: 'text',
+            marker: {
+              size: 8,
+              color: searchResult.results.map((r) => r.cosine_similarity),
+              colorscale: 'Viridis',
+              showscale: true,
+            },
+            name: 'Retrieved Chunks',
+          } as unknown as Data,
+        ]
+      : [
+          {
+            type: 'bar',
+            orientation: 'h',
+            y: reversedResults.map((r) => {
+              const label = `${r.doc_title} (#${r.chunk_index})`;
+              return label.length > 28 ? `${label.slice(0, 26)}…` : label;
+            }),
+            x: reversedResults.map((r) => r.score),
+            text: reversedResults.map((r) => r.score.toFixed(4)),
+            textposition: 'auto',
+            marker: { color: '#22c55e' },
+            name: metric,
+          },
+        ]
     : [];
 
   return (
@@ -183,21 +210,60 @@ export const RagPlaygroundPanel: React.FC<RagPlaygroundPanelProps> = ({
           {/* Query-to-Document Score Chart */}
           {searchResult.results.length > 0 && (
             <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-              <div className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-brand-500" />
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                  Query-to-Document Retrieval Ranking ({searchResult.metric})
-                </h3>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <BarChart3 className="w-4 h-4 text-brand-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    {chartView === '3d'
+                      ? '3D Retrieval Metric Space (Cosine · L2 · Dot)'
+                      : `Query-to-Document Retrieval Ranking (${searchResult.metric})`}
+                  </h3>
+                </div>
+                <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-slate-100 dark:bg-slate-950 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setChartView('bar')}
+                    className={`px-2 py-0.5 rounded ${
+                      chartView === 'bar'
+                        ? 'bg-brand-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Score Bar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartView('3d')}
+                    className={`px-2 py-0.5 rounded ${
+                      chartView === '3d'
+                        ? 'bg-sky-600 text-white font-semibold'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    3D Metrics
+                  </button>
+                </div>
               </div>
               <PlotlyChart
                 data={scoreChartData}
                 isDark={isDark}
                 testId="rag-retrieval-chart"
                 className="w-full h-72"
-                layout={{
-                  margin: { l: 110, r: 24, t: 16, b: 40 },
-                  xaxis: { title: { text: searchResult.metric } },
-                }}
+                layout={
+                  chartView === '3d'
+                    ? {
+                        margin: { l: 0, r: 0, t: 16, b: 0 },
+                        scene: {
+                          xaxis: { title: { text: 'Cosine Sim' } },
+                          yaxis: { title: { text: 'Euclidean L2' } },
+                          zaxis: { title: { text: 'Dot Product' } },
+                        },
+                      }
+                    : {
+                        margin: { l: 110, r: 24, t: 16, b: 40 },
+                        xaxis: { title: { text: searchResult.metric } },
+                      }
+                }
               />
             </div>
           )}
