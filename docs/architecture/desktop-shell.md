@@ -54,6 +54,6 @@ The `desktop/` application wraps the shared React UI (`web/dist`) in a native Wi
 
 ## 5. Developer Workflows
 
-- **Desktop Dev Mode (Windows):** `.\scripts\dev.ps1 -Desktop` starts FastAPI (`127.0.0.1:8000`), runs `npx @tauri-apps/cli dev` (which triggers `npm run dev --prefix ../../web`), and shuts down the backend process on exit.
+- **Default Dev Mode (Windows / Unix):** `.\scripts\dev.ps1` (or `./scripts/dev.sh`) starts FastAPI (`127.0.0.1:8000`) and runs `npx --yes @tauri-apps/cli dev` (which triggers `npm run dev --prefix ../web` on `http://localhost:5173` alongside the native Tauri window), shutting down the backend cleanly on exit. Pass `-WebOnly` (`--web-only`) to run only the browser Web Studio + backend.
 - **Desktop Quality & Test Checks:** `.\scripts\check.ps1` and `.\scripts\test.ps1` validate both `xakugraph-core` and `xakugraph-desktop` alongside Python and Vitest suites.
 - **Release Binary / Bundle:** `.\scripts\build.ps1 -Desktop` compiles the frontend bundle and builds the Tauri application binary.
