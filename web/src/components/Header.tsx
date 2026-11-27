@@ -38,14 +38,14 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         <img
-          src="/favicon.svg"
+          src="/XakuGraph.svg"
           alt="XakuGraph logo"
-          className="w-8 h-8 rounded-lg shadow-sm shrink-0"
+          className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
         />
         <div className="min-w-0">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-slate-900 dark:text-white tracking-tight text-sm sm:text-base truncate">
-              XakuGraph
+              Xaku<span className="text-brand-600 dark:text-brand-500">Graph</span>
             </span>
             <span className="text-[11px] sm:text-xs px-1.5 py-0.5 rounded bg-brand-500/15 dark:bg-brand-500/20 text-brand-700 dark:text-brand-400 font-mono shrink-0">
               v{health?.version ?? '1.0.0'}
