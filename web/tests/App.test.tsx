@@ -92,7 +92,15 @@ describe('XakuGraph App Foundation', () => {
   it('renders Studio Dashboard with brand header', async () => {
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText('XakuGraph')).toBeInTheDocument();
+      const brandTitle = screen.getByText(
+        (_, element) => element?.tagName === 'SPAN' && element.textContent === 'XakuGraph'
+      );
+      expect(brandTitle).toBeInTheDocument();
+      const logo = screen.getByAltText('XakuGraph logo');
+      expect(logo).toHaveAttribute('src', '/XakuGraph.svg');
+      expect(logo).toHaveClass('w-10', 'h-10', 'sm:w-12', 'sm:h-12');
+      expect(logo).not.toHaveClass('border', 'rounded-lg');
+      expect(screen.getByText('Graph')).toHaveClass('text-brand-600', 'dark:text-brand-500');
       expect(screen.getByText('Studio Modules')).toBeInTheDocument();
     });
   });
@@ -155,7 +163,11 @@ describe('XakuGraph App Foundation', () => {
   it('omits sidebar platform/storage & phase status text and opens mobile hamburger menu', async () => {
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText('XakuGraph')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, element) => element?.tagName === 'SPAN' && element.textContent === 'XakuGraph'
+        )
+      ).toBeInTheDocument();
     });
 
     expect(screen.queryByText('Studio Status')).not.toBeInTheDocument();

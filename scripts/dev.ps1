@@ -96,9 +96,28 @@ if (-not (Test-Path $WebModules)) {
     }
 }
 
-# 4. Build Desktop Debug Binary Only If Missing or Explicitly Requested
-if ($LaunchDesktop -and ($Rebuild -or -not (Test-Path $DesktopDebugExe))) {
-    Write-Host "`n[Setup] Building XakuGraph desktop debug executable (one-time)..." -ForegroundColor Yellow
+# 4. Build Desktop Debug Binary If Missing, Outdated, or Explicitly Requested
+$DesktopNeedsBuild = $Rebuild -or -not (Test-Path $DesktopDebugExe)
+if (-not $DesktopNeedsBuild -and $LaunchDesktop -and $hasCargo) {
+    $ExeTime = (Get-Item $DesktopDebugExe).LastWriteTimeUtc
+    $DesktopInputs = @(
+        (Join-Path $ProjectRoot "desktop\src-tauri\src"),
+        (Join-Path $ProjectRoot "desktop\src-tauri\icons"),
+        (Join-Path $ProjectRoot "desktop\src-tauri\tauri.conf.json"),
+        (Join-Path $ProjectRoot "desktop\src-tauri\Cargo.toml"),
+        (Join-Path $ProjectRoot "desktop\src-tauri\build.rs"),
+        (Join-Path $ProjectRoot "crates\xakugraph-core\src")
+    )
+    $NewestInput = Get-ChildItem -Path $DesktopInputs -Recurse -File -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTimeUtc -Descending |
+        Select-Object -First 1
+    if ($NewestInput -and $NewestInput.LastWriteTimeUtc -gt $ExeTime) {
+        $DesktopNeedsBuild = $true
+    }
+}
+
+if ($LaunchDesktop -and $DesktopNeedsBuild) {
+    Write-Host "`n[Setup] Building XakuGraph desktop debug executable..." -ForegroundColor Yellow
     & cargo build -p xakugraph-desktop
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
